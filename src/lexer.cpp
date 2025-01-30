@@ -40,10 +40,11 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
         {"&&", And},
 
     };
+    std::string token_str;
     while (str_pos < expr_len){
+        token_str.clear();
         char chr = expr[str_pos++];
         if (char_tokens.find(chr) != char_tokens.end()){
-            std::string token_str;
             token_str.push_back(chr);
             TokenType token = char_tokens[chr];
             if (token != Other){
@@ -82,7 +83,6 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
         }
         // parse the token if it's a literal number
         else if ('0' <= chr && chr <= '9'){
-            std::string token_str;
             token_str.push_back(chr);
             bool radix_found {false};
             while (str_pos < expr_len && (('0' <= expr[str_pos] && chr <= expr[str_pos]) || expr[str_pos] == '.')){
@@ -102,7 +102,6 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
         }
         else{
             // parse to the end of the token
-            std::string token_str;
             token_str.push_back(chr);
             while (str_pos < expr_len && char_tokens.find(expr[str_pos]) == char_tokens.end())
                 token_str.push_back(expr[str_pos++]);
