@@ -9,13 +9,14 @@ Token parse_token(const std::string& expr, size_t& str_pos, const std::unordered
     // read to the end of the current token
     std::string token_str;
     token_str.push_back(expr[str_pos - 1]);
-    while (str_pos < expr.size() && char_tokens.find(expr[str_pos]) == char_tokens.end())
-        token_str.push_back(expr[str_pos++]);
+    while (str_pos < expr.size() && !char_tokens.count(expr[str_pos])){
+        token_str.push_back(expr[str_pos]);
+        ++str_pos;
+    }
     // determine the token type
     auto type = word_tokens.find(token_str);
-    if (type != word_tokens.end()){
+    if (type != word_tokens.end())
         return Token(type->second, token_str);
-    }
     // we assume any unrecognized character is a user-defined symbol
     return Token(Sym, token_str);
 }
@@ -24,7 +25,7 @@ Token parse_num(const std::string& expr, size_t& str_pos){
     std::string token_str;
     token_str.push_back(expr[str_pos-1]);
     bool radix_found {false};
-        while (str_pos < expr.size() && (('0' <= expr[str_pos] && expr[str_pos] <= expr[str_pos]) || expr[str_pos] == '.')){
+        while (str_pos < expr.size() && (('0' <= expr[str_pos] && expr[str_pos] <= '9') || expr[str_pos] == '.')){
             if (expr[str_pos] == '.'){
                 if (radix_found)
                     throw std::runtime_error("invalid floating point literal");
