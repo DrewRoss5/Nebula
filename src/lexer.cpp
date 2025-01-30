@@ -5,6 +5,39 @@
 
 #include "../inc/lexer.h"
 
+Token parse_token(const std::string& expr, size_t& str_pos, const std::unordered_map<char, TokenType>& char_tokens, const std::unordered_map<std::string, TokenType>& word_tokens){
+    // read to the end of the current token
+    std::string token_str;
+    token_str.push_back(expr[str_pos - 1]);
+    while (str_pos < expr.size() && char_tokens.find(expr[str_pos]) == char_tokens.end())
+        token_str.push_back(expr[str_pos++]);
+    // determine the token type
+    auto type = word_tokens.find(token_str);
+    if (type != word_tokens.end()){
+        return Token(type->second, token_str);
+    }
+    // we assume any unrecognized character is a user-defined symbol
+    return Token(Sym, token_str);
+}
+
+Token parse_num(const std::string& expr, size_t& str_pos){
+    std::string token_str;
+    token_str.push_back(expr[str_pos-1]);
+    bool radix_found {false};
+        while (str_pos < expr.size() && (('0' <= expr[str_pos] && expr[str_pos] <= expr[str_pos]) || expr[str_pos] == '.')){
+            if (expr[str_pos] == '.'){
+                if (radix_found)
+                    throw std::runtime_error("invalid floating point literal");
+                radix_found = true;
+            }
+            token_str.push_back(expr[str_pos]);
+            str_pos++;
+        }
+        if (radix_found)
+            return Token(FloatLiteral, token_str);
+        return Token(IntLiteral, token_str);
+}
+
 void tokenize(const std::string& expr, std::vector<Token>& tokens){
     size_t str_pos = 0;
     size_t expr_len = expr.length();
@@ -44,9 +77,10 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
     while (str_pos < expr_len){
         token_str.clear();
         char chr = expr[str_pos++];
-        if (char_tokens.find(chr) != char_tokens.end()){
+        auto type_itt = char_tokens.find(chr);
+        if (type_itt != char_tokens.end()){
             token_str.push_back(chr);
-            TokenType token = char_tokens[chr];
+            TokenType token = type_itt->second;
             if (token != Other){
                 tokens.push_back({token, token_str});
                 continue;
@@ -82,37 +116,9 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
             }
         }
         // parse the token if it's a literal number
-        else if ('0' <= chr && chr <= '9'){
-            token_str.push_back(chr);
-            bool radix_found {false};
-            while (str_pos < expr_len && (('0' <= expr[str_pos] && chr <= expr[str_pos]) || expr[str_pos] == '.')){
-                if (expr[str_pos] == '.'){
-                    if (radix_found)
-                        throw std::runtime_error("invalid floating point literal");
-                    radix_found = true;
-                }
-                token_str.push_back(expr[str_pos]);
-                str_pos++;
-            }
-            // append the parsed number to the token vector
-            if (radix_found)
-                tokens.push_back({FloatLiteral, token_str});
-            else
-                tokens.push_back({IntLiteral, token_str});
-        }
-        else{
-            // parse to the end of the token
-            token_str.push_back(chr);
-            while (str_pos < expr_len && char_tokens.find(expr[str_pos]) == char_tokens.end())
-                token_str.push_back(expr[str_pos++]);
-            // determine the token type
-            auto type = word_tokens.find(token_str);
-            if (type != word_tokens.end()){
-                tokens.push_back({type->second, token_str});
-            }
-            // we assume any unrecognized character is a user-defined symbol
-            else
-                tokens.push_back({Sym, token_str});
-        }
+        else if ('0' <= chr && chr <= '9')
+            tokens.push_back(parse_num(expr, str_pos));
+        else
+            tokens.push_back(parse_token(expr, str_pos, char_tokens, word_tokens));
     }
 }
