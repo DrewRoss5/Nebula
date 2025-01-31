@@ -1,6 +1,9 @@
+#include <iostream>
+#include <vector>
 #include <gtest/gtest.h>
 
 #include  "../inc/lexer.h"
+#include "../inc/values.hpp"
 
 /* DEBUG FUNCTIONS */
 void display_token(Token& token){
@@ -29,7 +32,7 @@ bool comp_token_text(const std::vector<Token>& tokens, const std::vector<std::st
     return true;
 }
 
-/* LEXER TESTS */
+/* TESTS FOR THE LEXER */
 TEST(LexerTests, CharTokens){
     std::vector<TokenType> expected = {Block, EvalBlock, Add, Sub, Mul, Div, Greater, Less, Eq, Neq, Asgn, Not, EvalBlockEnd, BlockEnd};
     std::vector<Token> tokens;
@@ -54,7 +57,24 @@ TEST(LexerTests, Symbols){
     tokenize("these are user defined", tokens);
     EXPECT_TRUE(comp_token_types(tokens, {Sym, Sym, Sym, Sym}));
     EXPECT_TRUE(comp_token_text(tokens, {"these", "are", "user", "defined"}));
+}
 
+
+/* TESTS FOR THE VALUE CLASS */
+TEST(ValueTests, Reading){
+    Value int_val = Value::create(INT, 5);
+    Value float_val = Value::create(FLOAT, 12.5);
+    Value char_val = Value::create(CHAR, '%');
+    Value bool_val = Value::create(BOOL, true);
+    // test that values can be read correctly
+    EXPECT_EQ(int_val.as<int>(), 5);
+    EXPECT_EQ(float_val.as<double>(), 12.5);
+    EXPECT_EQ(char_val.as<char>(), '%');
+}
+TEST(ValueTests, Writing){
+    Value int_val = Value::create(INT, 5);
+    int_val.update(666);
+    EXPECT_EQ(int_val.as<int>(), 666);
 }
 
 int main(int argc, char** argv){
