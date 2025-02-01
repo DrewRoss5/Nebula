@@ -71,12 +71,17 @@ class TypeNode: public Node{
 // this node represents a variable
 class VarNode: public Node{
     public:
+        VarNode(ValueType val_type) {this->val_type = val_type; this->initialized = false; this->type = Var_N;}
         VarNode(const std::shared_ptr<Value>& val);
-        Value eval() override;
-        ValueType get_type();
+        Value eval() override; 
+        ValueType get_type() {return this->val_type;}
+        bool is_initialized() {return this->initialized;}
         bool operator==(VarNode& rhs);
         void assign(const Value& new_val);
+        void set_ptr(const std::shared_ptr<Value>& val) {this->val = val; this->initialized = true;}
     private:
+        bool initialized;
+        ValueType val_type;
         std::shared_ptr<Value> val;
 };
 

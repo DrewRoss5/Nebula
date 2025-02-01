@@ -100,12 +100,24 @@ TEST(NodeTests, Literals){
 TEST(NodeTests, Variables){
     std::shared_ptr<Value> int_ptr(Value::create_dyn(INT, 0));
     Value new_val = Value::create(INT, 42);
-    Value char_val = Value::create(CHAR, '$');
     // check that varables are updated correctly 
     VarNode int_var(int_ptr);
     EXPECT_EQ(int_var.eval().as<int>(), 0);
     int_var.assign(new_val);
     EXPECT_EQ(int_var.eval().as<int>(), 42);
+}
+TEST(NodeTests, Assignment){
+    Value float_val = Value::create(FLOAT, 12.34);
+    std::shared_ptr<Value> float_ptr(new Value(FLOAT));
+    LiteralNode lit_val(float_val);
+    VarNode var(FLOAT);
+    var.set_ptr(float_ptr);
+    AsgnNode assignment(&var, &lit_val);
+    assignment.eval();
+    EXPECT_EQ(var.eval().as<double>(), 12.34);
+}
+TEST(NodeTests, CompTests){
+    
 }
 
 int main(int argc, char** argv){

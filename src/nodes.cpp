@@ -1,3 +1,4 @@
+#include <iostream>
 #include <memory>
 #include <stdio.h>
 
@@ -7,15 +8,15 @@
 /* VarNode Functions */
 VarNode::VarNode(const std::shared_ptr<Value>& val){
     this->val = val;
+    this->val_type = val->get_type();
+    this->initialized = true;
     this->type = NodeType::Var_N;
 }
 // returns the current value of the variable 
 Value VarNode::eval(){
+    if (!this->initialized)
+        throw std::runtime_error("cannot evaluate an unitialized variable");
     return *this->val;
-}
-// returns the type of value the variable holds
-ValueType VarNode::get_type(){
-    return this->val->get_type();
 }
 // compares both the content and type of this variable to another
 bool VarNode::operator==(VarNode& rhs){
@@ -23,6 +24,10 @@ bool VarNode::operator==(VarNode& rhs){
 }
 // assigns a new value to the variable. This function assumes types have been checked by the caller
 void VarNode::assign(const Value& new_val){
+    if (!this->initialized){
+        this->val = std::shared_ptr<Value>(new Value(this->val_type));
+        this->initialized = true;
+    }
     *this->val = new_val;
 }
 
