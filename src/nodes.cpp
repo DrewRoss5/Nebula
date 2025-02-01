@@ -1,4 +1,3 @@
-#include <iostream>
 #include <memory>
 #include <stdio.h>
 
@@ -57,6 +56,7 @@ Value AsgnNode::eval(){
 CompNode::CompNode(Node* lhs, Node* rhs, Operator op){
     this->lhs = lhs;
     this->rhs = rhs;
+    this->op = op;
     this->type = NodeType::Comp_N;
 }
 Value CompNode::eval(){
@@ -100,7 +100,7 @@ Value BoolLogicNode::eval(){
             result = lhs_val.as<bool>() || lhs_val.as<bool>();
             break;
         case LogicAnd:
-            result = lhs_val.as<bool>() || lhs_val.as<bool>();
+            result = lhs_val.as<bool>() && lhs_val.as<bool>();
             break;
     }
     return Value::create(BOOL, result);

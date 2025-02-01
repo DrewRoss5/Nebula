@@ -116,8 +116,29 @@ TEST(NodeTests, Assignment){
     assignment.eval();
     EXPECT_EQ(var.eval().as<double>(), 12.34);
 }
-TEST(NodeTests, CompTests){
-    
+TEST(NodeTests, Comparison){
+    std::shared_ptr<Value> val_ptr(Value::create_dyn(INT, 42));
+    LiteralNode int_literal(*val_ptr);
+    VarNode int_var(val_ptr);
+    // ensure that eequality and inequality are determined correctly
+    CompNode eq_node(&int_literal, &int_var, Equal);
+    EXPECT_TRUE(eq_node.eval().as<bool>());
+    int_var.assign(std::move(Value::create(INT, 10)));
+    EXPECT_FALSE(eq_node.eval().as<bool>());
+}
+TEST(NodeTests, BoolLogic){
+    LiteralNode false_lit(std::move(Value::create(BOOL, false)));
+    LiteralNode true_lit(std::move(Value::create(BOOL, false)));
+    std::shared_ptr<Value> val_ptr(std::move(Value::create_dyn(INT, 42)));
+    LiteralNode int_literal(*val_ptr);
+    VarNode int_var(val_ptr);
+    CompNode eq_node(&int_literal, &int_var, Equal);
+    // check that boolean expressions are properly evalutated
+    BoolLogicNode and_node(&eq_node, &true_lit, LogicAnd);
+    BoolLogicNode or_node(&eq_node, &false_lit, LogicAnd);
+    EXPECT_TRUE(and_node.eval().as<bool>());
+    int_var.assign(std::move(Value::create(INT, 5)));
+    EXPECT_FALSE(or_node.eval().as<bool>());
 }
 
 int main(int argc, char** argv){
