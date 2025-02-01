@@ -53,7 +53,7 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
         {'}', BlockEnd},
         {'(', EvalBlock},
         {')', EvalBlockEnd},
-        {';', Block},
+        {';', Break},
         {'=', Other},
         {'\'', Other},
         {'!', Other},
