@@ -1,9 +1,12 @@
 #include <iostream>
+#include <stdexcept>
 #include <vector>
+#include <memory>
 #include <gtest/gtest.h>
 
 #include  "../inc/lexer.h"
 #include "../inc/values.hpp"
+#include "../inc/nodes.hpp"
 
 /* DEBUG FUNCTIONS */
 void display_token(Token& token){
@@ -75,6 +78,34 @@ TEST(ValueTests, Writing){
     Value int_val = Value::create(INT, 5);
     int_val.update(666);
     EXPECT_EQ(int_val.as<int>(), 666);
+}
+
+/* TESTS FOR NON-BLOCK NODES */
+TEST(NodeTests, Literals){
+    // test values
+    Value int_val = Value::create(INT, 5);
+    Value float_val = Value::create(FLOAT, 12.5);
+    Value char_val = Value::create(CHAR, '%');
+    Value bool_val = Value::create(BOOL, true);
+    // ensure each type of value can be evaluated as literal
+    LiteralNode node = LiteralNode(int_val);
+    EXPECT_EQ(node.eval(), int_val);
+    node = LiteralNode(float_val);
+    EXPECT_EQ(node.eval(), float_val);
+    node = LiteralNode(char_val);
+    EXPECT_EQ(node.eval(), char_val);
+    node = LiteralNode(bool_val);
+    EXPECT_EQ(node.eval(), bool_val);
+}
+TEST(NodeTests, Variables){
+    std::shared_ptr<Value> int_ptr(Value::create_dyn(INT, 0));
+    Value new_val = Value::create(INT, 42);
+    Value char_val = Value::create(CHAR, '$');
+    // check that varables are updated correctly 
+    VarNode int_var(int_ptr);
+    EXPECT_EQ(int_var.eval().as<int>(), 0);
+    int_var.assign(new_val);
+    EXPECT_EQ(int_var.eval().as<int>(), 42);
 }
 
 int main(int argc, char** argv){
