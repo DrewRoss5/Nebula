@@ -3,5 +3,5 @@ project(Nebula VERSION 0.1.0)
 
 find_package(GTest)
 include(GoogleTest)
-add_executable(NebulaTests inc/lexer.h inc/values.hpp src/lexer.cpp src/nodes.cpp src/values.cpp test/tests.cpp )
+add_executable(NebulaTests inc/lexer.h inc/values.hpp src/lexer.cpp src/nodes.cpp src/values.cpp src/symtable.cpp test/tests.cpp )
 target_link_libraries(NebulaTests PRIVATE GTest::gtest)

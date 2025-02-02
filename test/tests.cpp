@@ -7,6 +7,7 @@
 #include  "../inc/lexer.h"
 #include "../inc/values.hpp"
 #include "../inc/nodes.hpp"
+#include "../inc/symtable.h"
 
 /* DEBUG FUNCTIONS */
 void display_token(Token& token){
@@ -101,7 +102,7 @@ TEST(NodeTests, Variables){
     std::shared_ptr<Value> int_ptr(Value::create_dyn(INT, 0));
     Value new_val = Value::create(INT, 42);
     // check that varables are updated correctly 
-    VarNode int_var(int_ptr);
+    VarNode int_var(int_ptr, true);
     EXPECT_EQ(int_var.eval().as<int>(), 0);
     int_var.assign(new_val);
     EXPECT_EQ(int_var.eval().as<int>(), 42);
@@ -119,7 +120,7 @@ TEST(NodeTests, Assignment){
 TEST(NodeTests, Comparison){
     std::shared_ptr<Value> val_ptr(Value::create_dyn(INT, 42));
     LiteralNode int_literal(*val_ptr);
-    VarNode int_var(val_ptr);
+    VarNode int_var(val_ptr, true);
     // ensure that eequality and inequality are determined correctly
     CompNode eq_node(&int_literal, &int_var, Equal);
     EXPECT_TRUE(eq_node.eval().as<bool>());
@@ -131,7 +132,7 @@ TEST(NodeTests, BoolLogic){
     LiteralNode true_lit(std::move(Value::create(BOOL, false)));
     std::shared_ptr<Value> val_ptr(std::move(Value::create_dyn(INT, 42)));
     LiteralNode int_literal(*val_ptr);
-    VarNode int_var(val_ptr);
+    VarNode int_var(val_ptr, true);
     CompNode eq_node(&int_literal, &int_var, Equal);
     // check that boolean expressions are properly evalutated
     BoolLogicNode and_node(&eq_node, &true_lit, LogicAnd);
@@ -139,6 +140,27 @@ TEST(NodeTests, BoolLogic){
     EXPECT_TRUE(and_node.eval().as<bool>());
     int_var.assign(std::move(Value::create(INT, 5)));
     EXPECT_FALSE(or_node.eval().as<bool>());
+}
+
+/* SYMBOL TABLE TESTS */
+TEST(SymbolTableTests, General){   
+    Value int_val = Value::create(INT, 15);
+    Value char_val = Value::create(CHAR, '!');
+    SymbolTable sym_table;
+    SymbolTable child_table(&sym_table);
+    sym_table.create("int_var", INT);
+    child_table.create("char_var", CHAR);
+    // ensure scopes work properly
+    EXPECT_TRUE(sym_table.exists("int_var"));
+    EXPECT_FALSE(sym_table.exists("char_var"));
+    EXPECT_TRUE(child_table.exists("int_var"));
+    EXPECT_TRUE(child_table.exists("char_var"));
+    // ensure that pointers are disributed properly
+    VarNode int_var(sym_table.get("int_var"), true);
+    VarNode int_var_copy(child_table.get("int_var"), true);
+    int_var.assign(std::move(Value::create(INT, 256)));
+    EXPECT_EQ(int_var_copy.eval().as<int>(), 256);
+
 }
 
 int main(int argc, char** argv){

@@ -5,10 +5,10 @@
 #include "../inc/nodes.hpp"
 
 /* VarNode Functions */
-VarNode::VarNode(const std::shared_ptr<Value>& val){
+VarNode::VarNode(const std::shared_ptr<Value>& val, bool initialize){
     this->val = val;
     this->val_type = val->get_type();
-    this->initialized = true;
+    this->initialized = initialize;
     this->type = NodeType::Var_N;
 }
 // returns the current value of the variable 
@@ -23,10 +23,8 @@ bool VarNode::operator==(VarNode& rhs){
 }
 // assigns a new value to the variable. This function assumes types have been checked by the caller
 void VarNode::assign(const Value& new_val){
-    if (!this->initialized){
-        this->val = std::shared_ptr<Value>(new Value(this->val_type));
+    if (!this->initialized)
         this->initialized = true;
-    }
     *this->val = new_val;
 }
 

@@ -5,6 +5,10 @@ Value::Value(ValueType type, const std::vector<std::byte>& val){
     this->val = val;
 }
 
+// creates a dynamically allocated pointer to an unitialized value
+Value* Value::create_dyn(ValueType type){
+    return new Value(type);
+}
 
 // compares two Values, will only return true if they are of the same type and value
 bool Value::operator==(const Value& rhs) const{

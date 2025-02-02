@@ -23,6 +23,7 @@ class Value{
         static Value create(ValueType type, const T& val);
         template <typename T>
         static Value* create_dyn(ValueType type, const T& val);
+        static Value* create_dyn(ValueType type);
         template <typename T>
         T as() const;
         template <typename T>
