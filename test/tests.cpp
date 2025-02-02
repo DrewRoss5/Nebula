@@ -209,8 +209,24 @@ TEST(BlockTests, CondBlock){
     true_cond.eval();
     EXPECT_TRUE(false_cond.eval().is_null());
     EXPECT_EQ(int_var.eval().as<int>(), 2);
-
-
+}
+TEST(BlockTests, LoopBlock){
+    // initalize child nodes
+    LiteralNode one(Value::create(INT, 1));
+    LiteralNode ten(Value::create(INT, 10));
+    std::shared_ptr<Value> int_ptr(Value::create_dyn(INT));
+    VarNode int_var(int_ptr, false);
+    int_var.assign(one.eval());
+    ArithNode add_node(&int_var, &one,  ArithAdd);
+    AsgnNode asgn_node(&int_var, &add_node);
+    SymbolTable sym_table;
+    CompNode comparison(&int_var, &ten, NEqual);
+    LoopBlockNode loop(&sym_table, &comparison);
+    loop.push_statement(&asgn_node);
+    // this emulates a while loop that adds one to int_var until it is equal to one 
+    Value result = loop.eval();
+    EXPECT_EQ(result.as<int>(), 10);
+    EXPECT_EQ(int_var.eval().as<int>(), 10);
 }
 
 int main(int argc, char** argv){

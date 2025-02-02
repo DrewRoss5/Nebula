@@ -27,9 +27,9 @@ class CondBlockNode: public BlockNode{
         Node* condition;
 };
 
-class LoopBlock: public BlockNode{
+class LoopBlockNode: public BlockNode{
     public:
-        LoopBlock(SymbolTable* scope_ptr, Node* cond_pt);
+        LoopBlockNode(SymbolTable* scope_ptr, Node* cond_ptr);
         Value eval() override;
     private:
         Node* condition;

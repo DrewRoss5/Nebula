@@ -22,6 +22,7 @@ void BlockNode::push_statement(Node* statement){
 CondBlockNode::CondBlockNode(SymbolTable* scope_ptr, Node* cond_ptr){
     this->scope = scope_ptr;
     this->condition = cond_ptr;
+    this->eval_stack.push(Value(NULL_TYPE)); // this is so that the node can evaluate to something, even if the condition is false
 }
 Value CondBlockNode::eval(){
     Value cond_val = this->condition->eval();
@@ -29,19 +30,20 @@ Value CondBlockNode::eval(){
         throw std::runtime_error("invalid conditional");
     if (cond_val.as<bool>())
         return BlockNode::eval();
-    return Value(NULL_TYPE);
+    return Value(this->eval_stack.top());
 }
 
 /* Loop Block Functions */
-LoopBlock::LoopBlock(SymbolTable* scope_ptr, Node* cond_ptr){
+LoopBlockNode::LoopBlockNode(SymbolTable* scope_ptr, Node* cond_ptr){
     this->scope = scope_ptr;
     this->condition = cond_ptr;
+    this->eval_stack.push(Value(NULL_TYPE)); // this is so that the node can evaluate to something, even if the loop never runs
 }
-Value LoopBlock::eval(){
+Value LoopBlockNode::eval(){
     Value cond_val = this->condition->eval();
     if (cond_val.get_type() != BOOL)
         throw std::runtime_error("invalid conditional");
-    while (cond_val.as<bool>())
-        this->eval_stack.push(std::move(BlockNode::eval()));
-    return Value(NULL_TYPE); 
+    while (this->condition->eval().as<bool>())
+        this->eval_stack.push(BlockNode::eval());
+    return Value(this->eval_stack.top()); 
 }

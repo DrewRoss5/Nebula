@@ -65,16 +65,16 @@ Value CompNode::eval(){
     bool result;
     switch (lhs_val.get_type()){
         case INT:
-            result = this->compare(lhs_val.as<int>(), rhs_val.as<int>(), INT);
+            result = this->compare(lhs_val.as<int>(), rhs_val.as<int>(), true);
             break;
         case FLOAT:
-            result = this->compare(lhs_val.as<double>(), rhs_val.as<double>(), FLOAT);
+            result = this->compare(lhs_val.as<double>(), rhs_val.as<double>(), true);
             break;
         case CHAR:
-            result = this->compare(lhs_val.as<char>(), rhs_val.as<char>(), INT);
+            result = this->compare(lhs_val.as<char>(), rhs_val.as<char>(), false);
             break;
         case BOOL:
-            result = this->compare(lhs_val.as<bool>(), rhs_val.as<bool>(), INT);
+            result = this->compare(lhs_val.as<bool>(), rhs_val.as<bool>(), false);
             break;
     }
     return std::move(Value::create(ValueType::BOOL, result));
