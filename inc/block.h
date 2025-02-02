@@ -19,9 +19,9 @@ class BlockNode: public Node{
         SymbolTable* scope;
 };
 
-class CondBlock: public BlockNode{
+class CondBlockNode: public BlockNode{
     public:
-        CondBlock(SymbolTable* scope_ptr, Node* cond_ptr);
+        CondBlockNode(SymbolTable* scope_ptr, Node* cond_ptr);
         Value eval() override;
     private:
         Node* condition;

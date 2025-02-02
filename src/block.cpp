@@ -19,11 +19,11 @@ void BlockNode::push_statement(Node* statement){
 }
 
 /* Conditional Block Methods */
-CondBlock::CondBlock(SymbolTable* scope_ptr, Node* cond_ptr){
+CondBlockNode::CondBlockNode(SymbolTable* scope_ptr, Node* cond_ptr){
     this->scope = scope_ptr;
     this->condition = cond_ptr;
 }
-Value CondBlock::eval(){
+Value CondBlockNode::eval(){
     Value cond_val = this->condition->eval();
     if (cond_val.get_type() != BOOL)
         throw std::runtime_error("invalid conditional");

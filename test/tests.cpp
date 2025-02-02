@@ -187,6 +187,31 @@ TEST(BlockTests, BaseBlocks){
     test_block.push_statement(&mul_node);
     EXPECT_EQ(test_block.eval().as<int>(), 10);
 }
+TEST(BlockTests, CondBlock){
+    // logical literals
+    LiteralNode lit_false(Value::create(BOOL, false));
+    LiteralNode lit_true(Value::create(BOOL, true));
+    // int literals
+    LiteralNode one(Value::create(INT, 1));
+    LiteralNode two(Value::create(INT, 2));
+    // create the int variable
+    std::shared_ptr<Value> int_ptr(Value::create_dyn(INT));
+    VarNode int_var(int_ptr, false);
+    // create the assignment nodes
+    AsgnNode asgn_one (&int_var, &one);
+    AsgnNode asgn_two (&int_var, &two);
+    // create and evaluate the conditionals
+    SymbolTable sym_table;
+    CondBlockNode true_cond(&sym_table, &lit_true);
+    true_cond.push_statement(&asgn_one);
+    CondBlockNode false_cond(&sym_table, &lit_false);
+    true_cond.push_statement(&asgn_two);
+    true_cond.eval();
+    EXPECT_TRUE(false_cond.eval().is_null());
+    EXPECT_EQ(int_var.eval().as<int>(), 2);
+
+
+}
 
 int main(int argc, char** argv){
     testing::InitGoogleTest(&argc, argv);
