@@ -30,6 +30,7 @@ class Value{
         void update(const T& new_val);
         bool operator==(const Value& rhs) const;
         ValueType get_type() {return this->type;};
+        bool is_null() {return this->type == NULL_TYPE;}
     private:
         std::vector<std::byte> val;
         ValueType type;

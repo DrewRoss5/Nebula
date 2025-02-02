@@ -8,6 +8,7 @@
 #include "../inc/values.hpp"
 #include "../inc/nodes.hpp"
 #include "../inc/symtable.h"
+#include "../inc/block.h"
 
 /* DEBUG FUNCTIONS */
 void display_token(Token& token){
@@ -161,6 +162,30 @@ TEST(SymbolTableTests, General){
     int_var.assign(std::move(Value::create(INT, 256)));
     EXPECT_EQ(int_var_copy.eval().as<int>(), 256);
 
+}
+
+/* BLOCK TESTS */
+TEST(BlockTests, BaseBlocks){
+    /* 
+        This runs a test of a simple expression, assigning a value (2) to a variable and then
+        multiplying that variable by a constant (5). Because the multiplication is the last node evaluated, tbis
+        should evaluate to 10
+    */
+    // intialize child nodes (statements)
+    std::shared_ptr<Value> int_ptr(Value::create_dyn(INT));
+    LiteralNode zero(Value::create(INT, 0));
+    LiteralNode two(Value::create(INT, 2));
+    LiteralNode five(Value::create(INT, 5));
+    VarNode int_var(int_ptr, false); // let int_var int = 0;
+    int_var.assign(zero.eval()); // int_var = 0;
+    AsgnNode asgn_node(&int_var, &two);
+    ArithNode mul_node(&int_var, &five, ArithMul);
+    // construct the block
+    SymbolTable sym_table;
+    BlockNode test_block(&sym_table);
+    test_block.push_statement(&asgn_node);
+    test_block.push_statement(&mul_node);
+    EXPECT_EQ(test_block.eval().as<int>(), 10);
 }
 
 int main(int argc, char** argv){
