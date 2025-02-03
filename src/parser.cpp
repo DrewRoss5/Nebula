@@ -1,4 +1,3 @@
-#include <iostream>
 #include <stdexcept>
 #include <stack>
 #include <vector>
@@ -114,6 +113,7 @@ void Parser::parse_expr(){
         TypeNode* var_type;
         SymNode* var_name;
         BlockNode* new_block;
+        EvalBlockNode* eval_block;
         VarNode* var_node;
         SymbolTable* sym_table;
         TokenType op;
@@ -142,7 +142,7 @@ void Parser::parse_expr(){
                 char_lit = curr_token.txt[0];
                 this->push_node(new LiteralNode(Value::create(CHAR, char_lit)));
                 this->curr_pos++;
-                continue;;
+                continue;
             case BoolLiteral:
                 bool_lit = (curr_token.txt == "true") ? true : false;
                 this->push_node(new LiteralNode(Value::create(BOOL, bool_lit)));
@@ -182,22 +182,24 @@ void Parser::parse_expr(){
             case EvalBlock:
                 init_count = this->eval_count;
                 this->eval_count++;
-                new_block = new EvalBlockNode;
+                eval_block = new EvalBlockNode;
                 // read the next singular expression, and assume the next is a closing paren.
                 this->curr_pos++;
                 this->parse_expr();
                 if (this->node_stack.empty())
                     throw std::runtime_error("syntax error: expected expression");
-                condition = this->pop_node();
+                new_node = this->pop_node();
+                eval_block->set_body(new_node);
                 // ensure that thd end of the eval node was encountered
                 if (this->eval_count != init_count)
                     throw std::runtime_error("syntax error: expected \")\"");
-                this->push_node(new_block);
+                this->push_node(eval_block);
                 return;
             // Block enders
             case BlockEnd:
                 if (this->block_stack.empty())
                     throw std::runtime_error("syntax error: unexpected token \"end\"");
+                this->curr_pos++;
                 // pop the current block off the stack and append it to the node stack
                 this->block_stack.pop();
                 this->scopes.push_back(this->scope_stack.top());
@@ -215,6 +217,7 @@ void Parser::parse_expr(){
             case EvalBlockEnd:
                 if (this->eval_count == 0)
                     throw std::runtime_error("syntax error: unexpected token \")\"");
+                this->curr_pos++;
                 this->eval_count--;
                 return;
             // Binary Expressions

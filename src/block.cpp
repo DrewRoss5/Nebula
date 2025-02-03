@@ -22,6 +22,11 @@ void BlockNode::pop_statement(){
     this->statements.pop_back();
 }
 
+/* Eval block methods */
+Value EvalBlockNode::eval(){
+    return this->body->eval();
+}
+
 /* Conditional Block Methods */
 CondBlockNode::CondBlockNode(SymbolTable* scope_ptr, Node* cond_ptr){
     this->scope = scope_ptr;

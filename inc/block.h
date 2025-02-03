@@ -1,6 +1,7 @@
 #ifndef BLOCK_H
 #define BLOCK_H
 
+#include <iostream>
 #include <stack>
 #include <vector>
 
@@ -9,10 +10,10 @@
 
 class BlockNode: public Node{
     public:
-        BlockNode() {}
+        BlockNode() {this->type = Block_N;}
         BlockNode(SymbolTable* scope_ptr);
-        Value eval() override;
-        void push_statement(Node* statement);
+        virtual Value eval() override;
+        virtual void push_statement(Node* statement);
         void pop_statement();
     protected:
         std::stack<Value> eval_stack;
@@ -22,8 +23,10 @@ class BlockNode: public Node{
 
 class EvalBlockNode: public BlockNode{
     public: 
-        Value eval() override {return this->body->eval();};
+        EvalBlockNode() {this->type = Block_N;}
+        Value eval() override;
         void set_body(Node* body) {this->body = body;}
+        void push_statement(Node* statement) override {this->body = statement;};
     private:
         Node* body;
 };

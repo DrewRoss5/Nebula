@@ -274,7 +274,20 @@ TEST(ParserTests, BasicCompound){
     } 
     while(tmp);
     EXPECT_EQ(val.as<int>(), 24);
-}
+    tokens.clear();
+    tokenize ("let int foo = 10;"\
+              "let int bar = 2;"\
+              "(foo * bar) == 20;", tokens);
+    parser.reset(tokens);
+    parser.parse();
+    do{
+        tmp = parser.next_expr();
+        if (tmp)
+            val = tmp->eval();
+    } 
+    while(tmp);
+    EXPECT_EQ(val.as<bool>(), true);
+}   
 
 
 int main(int argc, char** argv){
