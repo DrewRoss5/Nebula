@@ -7,6 +7,7 @@
 /* Base block methods */
 BlockNode::BlockNode(SymbolTable* scope_ptr){
     this->scope = scope_ptr;
+    this->type = Block_N;
 }
 Value BlockNode::eval(){
     size_t statement_count = statements.size();
@@ -17,11 +18,15 @@ Value BlockNode::eval(){
 void BlockNode::push_statement(Node* statement){
     this->statements.push_back(statement);
 }
+void BlockNode::pop_statement(){
+    this->statements.pop_back();
+}
 
 /* Conditional Block Methods */
 CondBlockNode::CondBlockNode(SymbolTable* scope_ptr, Node* cond_ptr){
     this->scope = scope_ptr;
     this->condition = cond_ptr;
+    this->type = Block_N;
     this->eval_stack.push(Value(NULL_TYPE)); // this is so that the node can evaluate to something, even if the condition is false
 }
 Value CondBlockNode::eval(){
@@ -37,6 +42,7 @@ Value CondBlockNode::eval(){
 LoopBlockNode::LoopBlockNode(SymbolTable* scope_ptr, Node* cond_ptr){
     this->scope = scope_ptr;
     this->condition = cond_ptr;
+    this->type = Block_N;
     this->eval_stack.push(Value(NULL_TYPE)); // this is so that the node can evaluate to something, even if the loop never runs
 }
 Value LoopBlockNode::eval(){

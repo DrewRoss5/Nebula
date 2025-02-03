@@ -9,6 +9,7 @@
 #include "../inc/nodes.hpp"
 #include "../inc/symtable.h"
 #include "../inc/block.h"
+#include "../inc/parser.h"
 
 /* DEBUG FUNCTIONS */
 void display_token(Token& token){
@@ -39,9 +40,9 @@ bool comp_token_text(const std::vector<Token>& tokens, const std::vector<std::st
 
 /* TESTS FOR THE LEXER */
 TEST(LexerTests, CharTokens){
-    std::vector<TokenType> expected = {Block, EvalBlock, Add, Sub, Mul, Div, Greater, Less, Eq, Neq, Asgn, Not, EvalBlockEnd, BlockEnd};
+    std::vector<TokenType> expected = {EvalBlock, Add, Sub, Mul, Div, Greater, Less, Eq, Neq, Asgn, Not, EvalBlockEnd};
     std::vector<Token> tokens;
-    tokenize("{(+ - * / >< == != = !)}", tokens);
+    tokenize("(+ - * / >< == != = !)", tokens);
     EXPECT_TRUE(comp_token_types(tokens, expected));
 }
 TEST(LexerTests, WordTokens){
@@ -130,7 +131,7 @@ TEST(NodeTests, Comparison){
 }
 TEST(NodeTests, BoolLogic){
     LiteralNode false_lit(std::move(Value::create(BOOL, false)));
-    LiteralNode true_lit(std::move(Value::create(BOOL, false)));
+    LiteralNode true_lit(std::move(Value::create(BOOL, true)));
     std::shared_ptr<Value> val_ptr(std::move(Value::create_dyn(INT, 42)));
     LiteralNode int_literal(*val_ptr);
     VarNode int_var(val_ptr, true);
@@ -228,6 +229,53 @@ TEST(BlockTests, LoopBlock){
     EXPECT_EQ(result.as<int>(), 10);
     EXPECT_EQ(int_var.eval().as<int>(), 10);
 }
+
+/* Parser Tests */
+/**/
+TEST(ParserTests, Basic){
+    // test a simple expression
+    std::vector<Token> tokens;
+    tokenize("5 + 1;", tokens);
+    Parser parser(tokens);
+    parser.parse();
+    Node* add_node = parser.next_expr();
+    EXPECT_EQ(add_node->node_type(), Arith_N);
+    EXPECT_EQ(add_node->eval().as<int>(), 6);
+    add_node = nullptr;
+    // test boolean logic
+    tokens.clear();
+    tokenize("true && false;", tokens);
+    parser.reset(tokens);
+    parser.parse();
+    Node* and_node = parser.next_expr();
+    EXPECT_EQ(and_node->eval(), Value::create(BOOL, false));
+    and_node = nullptr;
+    // test defining variables
+    tokens.clear();
+    tokenize("let float x = 10.5;", tokens);
+    parser.reset(tokens);
+    parser.parse();
+    Node* var_node = parser.next_expr();
+    EXPECT_EQ(var_node->node_type(), Asgn_N);
+    EXPECT_EQ(var_node->eval().as<double>(), 10.5);
+}
+TEST(ParserTests, BasicCompound){
+    // this checks if compound expressions work by doing a simple interpretation of defining and then using a variable
+    std::vector<Token> tokens;
+    tokenize("let int num = 12; num * 2;", tokens);
+    Parser parser(tokens);
+    parser.parse(); // LOOPING HERE WTF
+    Node* tmp = nullptr;
+    Value val;
+    do{
+        tmp = parser.next_expr();
+        if (tmp)
+            val = tmp->eval();
+    } 
+    while(tmp);
+    EXPECT_EQ(val.as<int>(), 24);
+}
+
 
 int main(int argc, char** argv){
     testing::InitGoogleTest(&argc, argv);

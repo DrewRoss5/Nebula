@@ -49,8 +49,6 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
         {'/', Div},
         {'>', Greater},
         {'<', Less},
-        {'{', Block},
-        {'}', BlockEnd},
         {'(', EvalBlock},
         {')', EvalBlockEnd},
         {';', Break},
@@ -58,11 +56,13 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
         {'\'', Other},
         {'!', Other},
         {' ', Other},
-        {'\n', Other}
+        {'\n', Other},
+        {'\t', Other}
     };
     std::unordered_map<std::string, TokenType> word_tokens= {
         {"if", CondBlock},
         {"while", LoopBlock},
+        {"block", Block},
         {"int", TypeInt},
         {"float", TypeFloat},
         {"char", TypeChar},
@@ -70,6 +70,7 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
         {"true", BoolLiteral},
         {"false", BoolLiteral},
         {"let", Defn},
+        {"end", BlockEnd},
         {"||", Or},
         {"&&", And},
 

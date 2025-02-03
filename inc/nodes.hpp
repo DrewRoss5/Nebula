@@ -16,6 +16,7 @@ enum NodeType{
     Asgn_N,
     BoolLogic_N,
     Arith_N,
+    Block_N,
 };
 
 enum Operator{
@@ -35,6 +36,7 @@ enum Operator{
 class Node{
     public:
         virtual Value eval() = 0;      
+        NodeType node_type() {return this->type;}
     protected:
         NodeType type;
 };
@@ -83,18 +85,6 @@ class VarNode: public Node{
         bool initialized;
         ValueType val_type;
         std::shared_ptr<Value> val;
-};
-
-// this node represents a definition. It serves largely as a place holder as much of the assinmetn logic is performed by the interpreter itself
-class DefnNode: public Node{
-    public: 
-        DefnNode(SymNode* sym_node, TypeNode* type_node);
-        Value eval() override {return Value(NULL_TYPE);}
-        SymNode* get_sym() {return this->sym_node;}
-        TypeNode* get_type() {return this->type_node;}
-    private:
-        SymNode* sym_node;
-        TypeNode* type_node;
 };
 
 // this node assigns a variable to the result of the right child. The right child must evaluate to the same type as the variable. This node evaluates to the new value of the variable

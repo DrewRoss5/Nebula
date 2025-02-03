@@ -28,13 +28,6 @@ void VarNode::assign(const Value& new_val){
     *this->val = new_val;
 }
 
-
-/* DefnNode functions */
-DefnNode::DefnNode(SymNode* sym_node, TypeNode* type_node){
-    this->sym_node = sym_node;
-    this->type_node = type_node;
-}
-
 /* AsgnNode Functions */
 AsgnNode::AsgnNode(VarNode* lhs, Node* rhs){
     this->rhs = rhs;
@@ -95,10 +88,10 @@ Value BoolLogicNode::eval(){
     bool result;
     switch (this->op){
         case LogicOr:
-            result = lhs_val.as<bool>() || lhs_val.as<bool>();
+            result = lhs_val.as<bool>() || rhs_val.as<bool>();
             break;
         case LogicAnd:
-            result = lhs_val.as<bool>() && lhs_val.as<bool>();
+            result = lhs_val.as<bool>() && rhs_val.as<bool>();
             break;
     }
     return Value::create(BOOL, result);
@@ -116,7 +109,7 @@ Value ArithNode::eval(){
     Value rhs_val = this->rhs->eval();
     if (lhs_val.get_type() != rhs_val.get_type())
         throw std::runtime_error("cannot perform arithmetic on differing types");
-    if (lhs_val.get_type() != INT && lhs_val.get_type() != BOOL)
+    if (lhs_val.get_type() != INT || lhs_val.get_type() != INT)
         throw std::runtime_error("invalid operation for non-numeric types");
     switch (lhs_val.get_type()){
     case INT:

@@ -13,10 +13,19 @@ class BlockNode: public Node{
         BlockNode(SymbolTable* scope_ptr);
         Value eval() override;
         void push_statement(Node* statement);
+        void pop_statement();
     protected:
         std::stack<Value> eval_stack;
         std::vector<Node*> statements;
         SymbolTable* scope;
+};
+
+class EvalBlockNode: public BlockNode{
+    public: 
+        Value eval() override {return this->body->eval();};
+        void set_body(Node* body) {this->body = body;}
+    private:
+        Node* body;
 };
 
 class CondBlockNode: public BlockNode{
