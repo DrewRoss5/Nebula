@@ -162,7 +162,7 @@ void Parser::parse_expr(){
             // Block Nodes
             case Block:
                 // create a new block and push it onto the stack
-                sym_table = new SymbolTable;
+                sym_table = new SymbolTable(this->curr_scope);
                 new_block = new BlockNode(sym_table);
                 scope_stack.push(sym_table);
                 block_stack.push(new_block);
@@ -185,7 +185,7 @@ void Parser::parse_expr(){
                 } else {
                     new_block = new LoopBlockNode(sym_table, condition);
                 }
-                sym_table = new SymbolTable;
+                sym_table = new SymbolTable(this->curr_scope);
                 this->block_stack.push(new_block);
                 this->scope_stack.push(sym_table);
                 this->curr_pos++;

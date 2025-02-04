@@ -131,6 +131,38 @@ TEST(ParserTest, Blocks){
         end
         )"
     );
+    EXPECT_EQ(val.as<bool>(), false);
+    // test that blocks can access an outer scope
+    val = interpret(
+        R"(
+        let float tmp = 5.0;
+        begin
+            tmp==5.0;
+        end
+        
+        )"
+    );
+    EXPECT_EQ(val.as<bool>(), true);
+    // test that an outerscope cannot access a block's variables
+    bool error_raised = false;
+    try{
+        val = interpret(
+            R"(
+            
+            begin
+                let float tmp = 10.0;
+            end
+            tmp + 2.0;
+            )"
+        );
+    }
+    catch (std::runtime_error){
+        error_raised = true;
+    }
+    EXPECT_TRUE(error_raised);
+
+
+
 }
 
 int main(int argc, char** argv){
