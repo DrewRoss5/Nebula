@@ -12,9 +12,11 @@ class BlockNode: public Node{
     public:
         BlockNode() {this->type = Block_N;}
         BlockNode(SymbolTable* scope_ptr);
+        ~BlockNode();
+        Node* pop_statement();
+        size_t statement_count() {return this->statements.size();}
         virtual Value eval() override;
         virtual void push_statement(Node* statement);
-        void pop_statement();
     protected:
         std::stack<Value> eval_stack;
         std::vector<Node*> statements;

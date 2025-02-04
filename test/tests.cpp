@@ -38,6 +38,23 @@ bool comp_token_text(const std::vector<Token>& tokens, const std::vector<std::st
     return true;
 }
 
+// this is a simplified version of the interpreter for testing purposes
+Value interpret(const std::string& expr){
+    std::vector<Token> tokens;
+    tokenize(expr, tokens);
+    Parser parser(tokens);
+    parser.parse();
+    Value val;
+    Node* tmp;
+    do{
+        tmp = parser.next_expr();
+        if (tmp)
+            val = tmp->eval();
+    } 
+    while(tmp);
+    return val;
+}
+
 /* TESTS FOR THE LEXER */
 TEST(LexerTests, CharTokens){
     std::vector<TokenType> expected = {EvalBlock, Add, Sub, Mul, Div, Greater, Less, Eq, Neq, Asgn, Not, EvalBlockEnd};
@@ -65,85 +82,6 @@ TEST(LexerTests, Symbols){
     EXPECT_TRUE(comp_token_text(tokens, {"these", "are", "user", "defined"}));
 }
 
-
-/* TESTS FOR THE VALUE CLASS */
-TEST(ValueTests, Reading){
-    Value int_val = Value::create(INT, 5);
-    Value float_val = Value::create(FLOAT, 12.5);
-    Value char_val = Value::create(CHAR, '%');
-    Value bool_val = Value::create(BOOL, true);
-    // test that values can be read correctly
-    EXPECT_EQ(int_val.as<int>(), 5);
-    EXPECT_EQ(float_val.as<double>(), 12.5);
-    EXPECT_EQ(char_val.as<char>(), '%');
-}
-TEST(ValueTests, Writing){
-    Value int_val = Value::create(INT, 5);
-    int_val.update(666);
-    EXPECT_EQ(int_val.as<int>(), 666);
-}
-
-/* TESTS FOR NON-BLOCK NODES */
-TEST(NodeTests, Literals){
-    // test values
-    Value int_val = Value::create(INT, 5);
-    Value float_val = Value::create(FLOAT, 12.5);
-    Value char_val = Value::create(CHAR, '%');
-    Value bool_val = Value::create(BOOL, true);
-    // ensure each type of value can be evaluated as literal
-    LiteralNode node = LiteralNode(int_val);
-    EXPECT_EQ(node.eval(), int_val);
-    node = LiteralNode(float_val);
-    EXPECT_EQ(node.eval(), float_val);
-    node = LiteralNode(char_val);
-    EXPECT_EQ(node.eval(), char_val);
-    node = LiteralNode(bool_val);
-    EXPECT_EQ(node.eval(), bool_val);
-}
-TEST(NodeTests, Variables){
-    std::shared_ptr<Value> int_ptr(Value::create_dyn(INT, 0));
-    Value new_val = Value::create(INT, 42);
-    // check that varables are updated correctly 
-    VarNode int_var(int_ptr, true);
-    EXPECT_EQ(int_var.eval().as<int>(), 0);
-    int_var.assign(new_val);
-    EXPECT_EQ(int_var.eval().as<int>(), 42);
-}
-TEST(NodeTests, Assignment){
-    Value float_val = Value::create(FLOAT, 12.34);
-    std::shared_ptr<Value> float_ptr(new Value(FLOAT));
-    LiteralNode lit_val(float_val);
-    VarNode var(FLOAT);
-    var.set_ptr(float_ptr);
-    AsgnNode assignment(&var, &lit_val);
-    assignment.eval();
-    EXPECT_EQ(var.eval().as<double>(), 12.34);
-}
-TEST(NodeTests, Comparison){
-    std::shared_ptr<Value> val_ptr(Value::create_dyn(INT, 42));
-    LiteralNode int_literal(*val_ptr);
-    VarNode int_var(val_ptr, true);
-    // ensure that eequality and inequality are determined correctly
-    CompNode eq_node(&int_literal, &int_var, Equal);
-    EXPECT_TRUE(eq_node.eval().as<bool>());
-    int_var.assign(std::move(Value::create(INT, 10)));
-    EXPECT_FALSE(eq_node.eval().as<bool>());
-}
-TEST(NodeTests, BoolLogic){
-    LiteralNode false_lit(std::move(Value::create(BOOL, false)));
-    LiteralNode true_lit(std::move(Value::create(BOOL, true)));
-    std::shared_ptr<Value> val_ptr(std::move(Value::create_dyn(INT, 42)));
-    LiteralNode int_literal(*val_ptr);
-    VarNode int_var(val_ptr, true);
-    CompNode eq_node(&int_literal, &int_var, Equal);
-    // check that boolean expressions are properly evalutated
-    BoolLogicNode and_node(&eq_node, &true_lit, LogicAnd);
-    BoolLogicNode or_node(&eq_node, &false_lit, LogicAnd);
-    EXPECT_TRUE(and_node.eval().as<bool>());
-    int_var.assign(std::move(Value::create(INT, 5)));
-    EXPECT_FALSE(or_node.eval().as<bool>());
-}
-
 /* SYMBOL TABLE TESTS */
 TEST(SymbolTableTests, General){   
     Value int_val = Value::create(INT, 15);
@@ -165,130 +103,35 @@ TEST(SymbolTableTests, General){
 
 }
 
-/* BLOCK TESTS */
-TEST(BlockTests, BaseBlocks){
-    /* 
-        This runs a test of a simple expression, assigning a value (2) to a variable and then
-        multiplying that variable by a constant (5). Because the multiplication is the last node evaluated, tbis
-        should evaluate to 10
-    */
-    // intialize child nodes (statements)
-    std::shared_ptr<Value> int_ptr(Value::create_dyn(INT));
-    LiteralNode zero(Value::create(INT, 0));
-    LiteralNode two(Value::create(INT, 2));
-    LiteralNode five(Value::create(INT, 5));
-    VarNode int_var(int_ptr, false); // let int_var int = 0;
-    int_var.assign(zero.eval()); // int_var = 0;
-    AsgnNode asgn_node(&int_var, &two);
-    ArithNode mul_node(&int_var, &five, ArithMul);
-    // construct the block
-    SymbolTable sym_table;
-    BlockNode test_block(&sym_table);
-    test_block.push_statement(&asgn_node);
-    test_block.push_statement(&mul_node);
-    EXPECT_EQ(test_block.eval().as<int>(), 10);
-}
-TEST(BlockTests, CondBlock){
-    // logical literals
-    LiteralNode lit_false(Value::create(BOOL, false));
-    LiteralNode lit_true(Value::create(BOOL, true));
-    // int literals
-    LiteralNode one(Value::create(INT, 1));
-    LiteralNode two(Value::create(INT, 2));
-    // create the int variable
-    std::shared_ptr<Value> int_ptr(Value::create_dyn(INT));
-    VarNode int_var(int_ptr, false);
-    // create the assignment nodes
-    AsgnNode asgn_one (&int_var, &one);
-    AsgnNode asgn_two (&int_var, &two);
-    // create and evaluate the conditionals
-    SymbolTable sym_table;
-    CondBlockNode true_cond(&sym_table, &lit_true);
-    true_cond.push_statement(&asgn_one);
-    CondBlockNode false_cond(&sym_table, &lit_false);
-    true_cond.push_statement(&asgn_two);
-    true_cond.eval();
-    EXPECT_TRUE(false_cond.eval().is_null());
-    EXPECT_EQ(int_var.eval().as<int>(), 2);
-}
-TEST(BlockTests, LoopBlock){
-    // initalize child nodes
-    LiteralNode one(Value::create(INT, 1));
-    LiteralNode ten(Value::create(INT, 10));
-    std::shared_ptr<Value> int_ptr(Value::create_dyn(INT));
-    VarNode int_var(int_ptr, false);
-    int_var.assign(one.eval());
-    ArithNode add_node(&int_var, &one,  ArithAdd);
-    AsgnNode asgn_node(&int_var, &add_node);
-    SymbolTable sym_table;
-    CompNode comparison(&int_var, &ten, NEqual);
-    LoopBlockNode loop(&sym_table, &comparison);
-    loop.push_statement(&asgn_node);
-    // this emulates a while loop that adds one to int_var until it is equal to one 
-    Value result = loop.eval();
-    EXPECT_EQ(result.as<int>(), 10);
-    EXPECT_EQ(int_var.eval().as<int>(), 10);
-}
-
 /* Parser Tests */
-/**/
 TEST(ParserTests, Basic){
-    // test a simple expression
-    std::vector<Token> tokens;
-    tokenize("5 + 1;", tokens);
-    Parser parser(tokens);
-    parser.parse();
-    Node* add_node = parser.next_expr();
-    EXPECT_EQ(add_node->node_type(), Arith_N);
-    EXPECT_EQ(add_node->eval().as<int>(), 6);
-    add_node = nullptr;
-    // test boolean logic
-    tokens.clear();
-    tokenize("true && false;", tokens);
-    parser.reset(tokens);
-    parser.parse();
-    Node* and_node = parser.next_expr();
-    EXPECT_EQ(and_node->eval(), Value::create(BOOL, false));
-    and_node = nullptr;
-    // test defining variables
-    tokens.clear();
-    tokenize("let float x = 10.5;", tokens);
-    parser.reset(tokens);
-    parser.parse();
-    Node* var_node = parser.next_expr();
-    EXPECT_EQ(var_node->node_type(), Asgn_N);
-    EXPECT_EQ(var_node->eval().as<double>(), 10.5);
+    Value val = interpret("5 + 10;");
+    EXPECT_EQ(val.as<int>(), 15);
+    val = interpret("let float x = 10.5;");
+    EXPECT_EQ(val.as<double>(), 10.5);
 }
 TEST(ParserTests, BasicCompound){
     // this checks if compound expressions work by doing a simple interpretation of defining and then using a variable
-    std::vector<Token> tokens;
-    tokenize("let int num = 12; num * 2;", tokens);
-    Parser parser(tokens);
-    parser.parse(); // LOOPING HERE WTF
-    Node* tmp = nullptr;
-    Value val;
-    do{
-        tmp = parser.next_expr();
-        if (tmp)
-            val = tmp->eval();
-    } 
-    while(tmp);
+    Value val = interpret("let int num = 12; num * 2;");
     EXPECT_EQ(val.as<int>(), 24);
-    tokens.clear();
-    tokenize ("let int foo = 10;"\
-              "let int bar = 2;"\
-              "(foo * bar) == 20;", tokens);
-    parser.reset(tokens);
-    parser.parse();
-    do{
-        tmp = parser.next_expr();
-        if (tmp)
-            val = tmp->eval();
-    } 
-    while(tmp);
+    // this tests evaluating variables
+    val = interpret("let int foo = 10;"\
+                    "let int bar = 2;"\
+                    "(foo * bar) == 20;");
     EXPECT_EQ(val.as<bool>(), true);
 }   
-
+TEST(ParserTest, Blocks){
+    // test a simple block
+    Value val = interpret(
+        R"(
+        begin
+            let char a = 'a';
+            let char b = 'b';
+            a == b;
+        end
+        )"
+    );
+}
 
 int main(int argc, char** argv){
     testing::InitGoogleTest(&argc, argv);

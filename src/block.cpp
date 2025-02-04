@@ -9,6 +9,10 @@ BlockNode::BlockNode(SymbolTable* scope_ptr){
     this->scope = scope_ptr;
     this->type = Block_N;
 }
+BlockNode::~BlockNode(){
+    for (int i = 0; i < this->statements.size(); i++)
+        delete this->statements[i];
+}
 Value BlockNode::eval(){
     size_t statement_count = statements.size();
     for (int i = 0; i < statement_count; i++)
@@ -18,8 +22,10 @@ Value BlockNode::eval(){
 void BlockNode::push_statement(Node* statement){
     this->statements.push_back(statement);
 }
-void BlockNode::pop_statement(){
+Node* BlockNode::pop_statement(){
+    Node* retval = this->statements.back();
     this->statements.pop_back();
+    return retval;
 }
 
 /* Eval block methods */

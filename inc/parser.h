@@ -12,9 +12,6 @@
 #include "../inc/block.h"
 
 class Parser{
-    
-
-  
     public:
         Parser(const std::vector<Token>& tokens);
         ~Parser();
@@ -37,6 +34,7 @@ class Parser{
         std::vector<SymbolTable*> scopes; // this is to store scopes that have been declared, but aren't on the stack
         std::vector<Node*> nodes; // see above, but for nodes
         Node* pop_node();
+        size_t stack_size();
         void push_node(Node* node);
         void parse_expr();
         void clear();

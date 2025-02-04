@@ -114,10 +114,8 @@ Value ArithNode::eval(){
     switch (lhs_val.get_type()){
     case INT:
         return this->calculate(rhs_val.as<int>(), lhs_val.as<int>(), true);
-        break;
     case FLOAT:
         return this->calculate(rhs_val.as<double>(), lhs_val.as<double>(), false);
-        break;
     }
     return Value(NULL_TYPE);
 }

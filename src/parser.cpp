@@ -38,6 +38,13 @@ Parser::~Parser(){
     this->clear();
 }
 
+// returns the number of nodes in the current block, or the number of nodes in the global scope if not in a block
+size_t Parser::stack_size(){
+    if (this->curr_block)
+        return this->curr_block->statement_count();
+    return this->node_stack.size();
+}
+
 // clears all internal member variables of the parser and performs the appropriate cleanup
 void Parser::clear(){
     while (!this->block_stack.empty()){
@@ -66,16 +73,20 @@ void Parser::reset(const std::vector<Token>& new_tokens){
 
 // appends a new node to the node stack, and if we're currently in a block, to the current block
 void Parser::push_node(Node* node){
-    this->node_stack.push_back(node);
     if (this->curr_block)
         this->curr_block->push_statement(node);
+    else
+        this->node_stack.push_back(node);
 }
 // pops a node from the stack, if we're currently in a block, pops a node form the current block
 Node* Parser::pop_node(){
-    Node* ret_val = this->node_stack.back();
-    this->node_stack.pop_back();
+    Node* ret_val;
     if (this->curr_block)
-        this->curr_block->pop_statement();
+        ret_val = this->curr_block->pop_statement();
+    else{
+        ret_val = this->node_stack.back();
+        this->node_stack.pop_back();
+    }
     // store this node to be deleted later
     this->nodes.push_back(ret_val);
     return ret_val;
@@ -109,7 +120,7 @@ void Parser::parse_expr(){
         double float_lit;
         char char_lit;
         bool bool_lit;
-        Node* condition, *new_node, *rhs, *lhs;
+        Node* condition, *new_node, *rhs, *lhs, *to_copy;
         TypeNode* var_type;
         SymNode* var_name;
         BlockNode* new_block;
@@ -166,7 +177,7 @@ void Parser::parse_expr(){
                 curr_pos++;
                 this->parse_expr();
                 if (this->node_stack.empty())
-                    throw std::runtime_error("syntax error: expected expression");
+                    throw std::runtime_error("syntax error: expected expression (1)");
                 condition = this->pop_node();
                 // create the block
                 if (curr_token.type == CondBlock) {
@@ -187,7 +198,7 @@ void Parser::parse_expr(){
                 this->curr_pos++;
                 this->parse_expr();
                 if (this->node_stack.empty())
-                    throw std::runtime_error("syntax error: expected expression");
+                    throw std::runtime_error("syntax error: expected expression (2)");
                 new_node = this->pop_node();
                 eval_block->set_body(new_node);
                 // ensure that thd end of the eval node was encountered
@@ -201,10 +212,11 @@ void Parser::parse_expr(){
                     throw std::runtime_error("syntax error: unexpected token \"end\"");
                 this->curr_pos++;
                 // pop the current block off the stack and append it to the node stack
+                
                 this->block_stack.pop();
                 this->scopes.push_back(this->scope_stack.top());
                 this->scope_stack.pop();
-                push_node(this->curr_block);
+                to_copy = this->curr_block;
                 if (this->block_stack.empty()){
                     this->curr_block = nullptr;
                     this->curr_scope = &this->global_scope;
@@ -213,6 +225,8 @@ void Parser::parse_expr(){
                     this->curr_block = this->block_stack.top();
                     this->curr_scope = this->scope_stack.top();
                 }
+
+                push_node(to_copy);
                 return;
             case EvalBlockEnd:
                 if (this->eval_count == 0)
@@ -226,8 +240,8 @@ void Parser::parse_expr(){
             case Or:
                 curr_pos++;
                 this->parse_expr();
-                if (this->node_stack.size() < 2)
-                    throw std::runtime_error("syntax error: expected expression");
+                if (this->stack_size() < 2)
+                    throw std::runtime_error("syntax error: expected expression (3)");
                 rhs = this->pop_node();
                 lhs = this->pop_node();
                 new_node = new BoolLogicNode(lhs, rhs, OPERATOR_MAP[curr_token.type]);
@@ -239,8 +253,8 @@ void Parser::parse_expr(){
             case Less:
                 curr_pos++;
                 this->parse_expr();
-                if (this->node_stack.size() < 2)
-                    throw std::runtime_error("syntax error: expected expression");
+                if (this->stack_size() < 2)
+                    throw std::runtime_error("syntax error: expected expression (4)");
                 rhs = this->pop_node();
                 lhs = this->pop_node();
                 new_node = new CompNode(lhs, rhs, OPERATOR_MAP[curr_token.type]);
@@ -254,8 +268,8 @@ void Parser::parse_expr(){
                 curr_pos++;
                 this->parse_expr();
                 // ensure at least two nodes are on the stack
-                if (this->node_stack.size() < 2)
-                    throw std::runtime_error("syntax error: expected expression");
+                if (this->stack_size() < 2)
+                    throw std::runtime_error("syntax error: expected expression (5)");
                 //generate  the boolean expression
                 rhs = this->pop_node();
                 lhs = this->pop_node();
@@ -267,8 +281,8 @@ void Parser::parse_expr(){
                 // parse the next two nodes
                 curr_pos++;
                 this->parse_expr();
-                if (this->node_stack.size() < 2)
-                    throw std::runtime_error("error: expected expression");
+                if (this->stack_size() < 2)
+                    throw std::runtime_error("error: expected expression (6)");
                 rhs = this->pop_node();
                 lhs = this->pop_node();
                 // ensure the nodes are a type literal and a symbol, respectively
@@ -289,8 +303,8 @@ void Parser::parse_expr(){
                 // parse the next two nodes
                 curr_pos++;
                 this->parse_expr();
-                if (this->node_stack.size() < 2)
-                    throw std::runtime_error("syntax error: expected expression");
+                if (this->stack_size() < 2)
+                    throw std::runtime_error("syntax error: expected expression (7)");
                 rhs = this->pop_node();
                 lhs = this->pop_node();
                 if (lhs->node_type() != Var_N)

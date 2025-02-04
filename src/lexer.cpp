@@ -70,6 +70,7 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
         {"true", BoolLiteral},
         {"false", BoolLiteral},
         {"let", Defn},
+        {"begin", Block},
         {"end", BlockEnd},
         {"||", Or},
         {"&&", And},
