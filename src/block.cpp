@@ -1,3 +1,4 @@
+#include <iostream>
 #include <stdexcept>
 #include <vector>
 
@@ -8,6 +9,7 @@
 BlockNode::BlockNode(SymbolTable* scope_ptr){
     this->scope = scope_ptr;
     this->type = Block_N;
+    this->block_t = Base;
 }
 BlockNode::~BlockNode(){
     for (int i = 0; i < this->statements.size(); i++)
@@ -45,8 +47,9 @@ Value CondBlockNode::eval(){
     Value cond_val = this->condition->eval();
     if (cond_val.get_type() != BOOL)
         throw std::runtime_error("invalid conditional");
-    if (cond_val.as<bool>())
+    if (cond_val.as<bool>()){
         return BlockNode::eval();
+    }
     return Value(this->eval_stack.top());
 }
 

@@ -46,10 +46,28 @@ Value interpret(const std::string& expr){
     parser.parse();
     Value val;
     Node* tmp;
+    BlockNode* block;
     do{
         tmp = parser.next_expr();
-        if (tmp)
-            val = tmp->eval();
+        if (tmp){
+            // if the value is a block, ensure the correct eval function is called
+            if (tmp->node_type() == Block_N){
+                block = static_cast<BlockNode*>(tmp);
+                switch (block->block_type()){
+                    case BlockType::Conditional:
+                        val = static_cast<CondBlockNode*>(tmp)->eval();
+                        break;
+                    case BlockType::Loop:
+                        val = static_cast<LoopBlockNode*>(tmp)->eval();
+                        break;
+                    default:
+                        val = tmp->eval();
+                        break;
+                }
+            }
+            else
+                val = tmp->eval();
+        }
     } 
     while(tmp); 
     return val;
@@ -117,7 +135,7 @@ TEST(ParserTests, BasicCompound){
     // this tests evaluating variables
     val = interpret("let int foo = 10;"\
                     "let int bar = 2;"\
-                    "(foo * bar) == 15;");
+                    "(foo * bar) == ((3 + 2) * 3);");
     EXPECT_EQ(val.as<bool>(), false);
 }   
 TEST(ParserTest, Blocks){
@@ -170,6 +188,28 @@ TEST(ParserTest, Blocks){
         )"
     );
     EXPECT_EQ(val.as<int>(), 20);
+    // test a false condition
+    val = interpret(
+        R"(
+            let int node = 5;
+            if (((1 + 5) == 7))
+                node = 20;
+            end
+            node;
+        )"
+    );
+    EXPECT_EQ(val.as<int>(), 5);
+    // test a  while loop
+    val = interpret(
+        R"(
+            let int ctr = 0;
+            while ((ctr != 10))
+                ctr = (ctr + 1);
+            end
+            ctr;
+        )"
+    );
+    EXPECT_EQ(val.as<int>(), 10);
     
 
 

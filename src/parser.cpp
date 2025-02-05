@@ -197,6 +197,7 @@ void Parser::parse_expr(){
                 sym_table = new SymbolTable(this->curr_scope);
                 this->block_stack.push(new_block);
                 this->scope_stack.push(sym_table);
+                this->curr_block = new_block;
                 continue;
             case EvalBlock:
                 init_count = this->eval_count;
