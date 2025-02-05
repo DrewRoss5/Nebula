@@ -1,31 +1,39 @@
 #ifndef BLOCK_H
 #define BLOCK_H
 
-#include <iostream>
 #include <stack>
 #include <vector>
 
 #include "../inc/nodes.hpp"
 #include "../inc/symtable.h"
 
+enum BlockType{
+    Base,
+    Eval,
+    Conditional,
+    Loop
+};
+
 class BlockNode: public Node{
     public:
-        BlockNode() {this->type = Block_N;}
+        BlockNode() {this->type = Block_N; this->block_t = Base;}
         BlockNode(SymbolTable* scope_ptr);
         ~BlockNode();
-        Node* pop_statement();
+        BlockType block_type() {return this->block_t;}
         size_t statement_count() {return this->statements.size();}
+        Node* pop_statement();
         virtual Value eval() override;
         virtual void push_statement(Node* statement);
     protected:
         std::stack<Value> eval_stack;
         std::vector<Node*> statements;
         SymbolTable* scope;
+        BlockType block_t;
 };
 
 class EvalBlockNode: public BlockNode{
     public: 
-        EvalBlockNode() {this->type = Block_N;}
+        EvalBlockNode() {this->type = Block_N; this->block_t = Eval;}
         Value eval() override;
         void set_body(Node* body) {this->body = body;}
         void push_statement(Node* statement) override {this->body = statement;};

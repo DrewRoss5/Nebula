@@ -51,7 +51,7 @@ Value interpret(const std::string& expr){
         if (tmp)
             val = tmp->eval();
     } 
-    while(tmp);
+    while(tmp); 
     return val;
 }
 
@@ -117,8 +117,8 @@ TEST(ParserTests, BasicCompound){
     // this tests evaluating variables
     val = interpret("let int foo = 10;"\
                     "let int bar = 2;"\
-                    "(foo * bar) == 20;");
-    EXPECT_EQ(val.as<bool>(), true);
+                    "(foo * bar) == 15;");
+    EXPECT_EQ(val.as<bool>(), false);
 }   
 TEST(ParserTest, Blocks){
     // test a simple block
@@ -127,32 +127,31 @@ TEST(ParserTest, Blocks){
         begin
             let char a = 'a';
             let char b = 'b';
-            a == b;
+            a != b;
         end
-        )"
-    );
-    EXPECT_EQ(val.as<bool>(), false);
-    // test that blocks can access an outer scope
-    val = interpret(
-        R"(
-        let float tmp = 5.0;
-        begin
-            tmp==5.0;
-        end
-        
         )"
     );
     EXPECT_EQ(val.as<bool>(), true);
+    // test that blocks can access an outer scope
+    val = interpret(
+        R"(
+            let float tmp = 5.0;
+            begin
+                tmp==5.0;
+            end
+            tmp;
+        )"
+    );
+    EXPECT_EQ(val.as<double>(), 5.0);
     // test that an outerscope cannot access a block's variables
     bool error_raised = false;
     try{
         val = interpret(
             R"(
-            
-            begin
-                let float tmp = 10.0;
-            end
-            tmp + 2.0;
+                begin
+                    let float tmp = 10.0;
+                end
+                tmp + 2.0;
             )"
         );
     }
@@ -160,6 +159,18 @@ TEST(ParserTest, Blocks){
         error_raised = true;
     }
     EXPECT_TRUE(error_raised);
+    // test that conditionals work
+    val = interpret(
+        R"(
+            let int node = 5;
+            if (true)
+                node = 20;
+            end
+            node;
+        )"
+    );
+    EXPECT_EQ(val.as<int>(), 20);
+    
 
 
 

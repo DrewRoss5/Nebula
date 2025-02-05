@@ -1,3 +1,4 @@
+#include <iostream>
 #include <memory>
 #include <stdio.h>
 
@@ -15,6 +16,7 @@ VarNode::VarNode(const std::shared_ptr<Value>& val, bool initialize){
 Value VarNode::eval(){
     if (!this->initialized)
         throw std::runtime_error("cannot evaluate an unitialized variable");
+    auto tmp = *this->val;
     return *this->val;
 }
 // compares both the content and type of this variable to another

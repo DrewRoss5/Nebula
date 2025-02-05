@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <stack>
 #include <vector>
+#include <unordered_map>
 
 #include "../inc/values.hpp"
 #include "../inc/lexer.h"
@@ -51,15 +52,23 @@ void Parser::clear(){
         this->nodes.push_back(this->block_stack.top());
         this->block_stack.pop();
     }
-    while (!this->node_stack.empty())
-        this->node_stack.push_back(this->pop_node());
+    while (!this->node_stack.empty()){
+        Node* tmp = this->pop_node();
+        if (tmp->node_type() != Block_N)
+            this->nodes.push_back(tmp);
+    }
+    // this map keeps track of all pointers that have been deleted. A map is used for O(1) lookup times
+    std::unordered_map<Node*, bool> freed_ptrs;
     // delete all dynamically allocated nodes and symbol tabkles
     for (int i = 0; i < this->scopes.size(); i++){
         delete this->scopes[i];
         this->scopes[i] = nullptr;
     }
     for (int i = 0; i < this->nodes.size(); i++){
-        delete this->nodes[i];
+        if (freed_ptrs.count(this->nodes[i]) == 0){
+            delete this->nodes[i];
+            freed_ptrs[this->nodes[i]] = true;
+        }
         this->nodes[i] = nullptr;
     }
 }
@@ -188,7 +197,6 @@ void Parser::parse_expr(){
                 sym_table = new SymbolTable(this->curr_scope);
                 this->block_stack.push(new_block);
                 this->scope_stack.push(sym_table);
-                this->curr_pos++;
                 continue;
             case EvalBlock:
                 init_count = this->eval_count;
@@ -202,7 +210,7 @@ void Parser::parse_expr(){
                 new_node = this->pop_node();
                 eval_block->set_body(new_node);
                 // ensure that thd end of the eval node was encountered
-                if (this->eval_count != init_count)
+                if (this->eval_count > init_count)
                     throw std::runtime_error("syntax error: expected \")\"");
                 this->push_node(eval_block);
                 return;
@@ -212,7 +220,6 @@ void Parser::parse_expr(){
                     throw std::runtime_error("syntax error: unexpected token \"end\"");
                 this->curr_pos++;
                 // pop the current block off the stack and append it to the node stack
-                
                 this->block_stack.pop();
                 this->scopes.push_back(this->scope_stack.top());
                 this->scope_stack.pop();
