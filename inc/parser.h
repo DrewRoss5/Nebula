@@ -23,6 +23,7 @@ class Parser{
         size_t token_count;
         size_t curr_pos {0};
         int eval_count  {0}; // keeps track of the number of eval blocks currentlty open
+        bool return_next {false};
         SymbolTable global_scope;
         SymbolTable* curr_scope;
         BlockNode* curr_block {nullptr};

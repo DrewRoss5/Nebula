@@ -152,22 +152,38 @@ void Parser::parse_expr(){
                 int_lit = std::stoi(curr_token.txt);
                 this->push_node(new LiteralNode(Value::create(INT, int_lit)));
                 this->curr_pos++;
-                continue;
+                if (this->return_next){
+                    this->return_next = false;
+                    return;
+                }
+                break;
             case FloatLiteral:
                 float_lit = std::stod(curr_token.txt);
                 this->push_node(new LiteralNode(Value::create(FLOAT, float_lit)));
                 this->curr_pos++;
-                continue;
+                if (this->return_next){
+                    this->return_next = false;
+                    return;
+                }
+                break;
             case CharLiteral:
                 char_lit = curr_token.txt[0];
                 this->push_node(new LiteralNode(Value::create(CHAR, char_lit)));
                 this->curr_pos++;
-                continue;
+                if (this->return_next){
+                    this->return_next = false;
+                    return;
+                }
+                break;
             case BoolLiteral:
                 bool_lit = (curr_token.txt == "true") ? true : false;
                 this->push_node(new LiteralNode(Value::create(BOOL, bool_lit)));
                 this->curr_pos++;
-                continue;
+                if (this->return_next){
+                    this->return_next = false;
+                    return;
+                }
+                break;
             // Block Nodes
             case Block:
                 // create a new block and push it onto the stack
@@ -205,14 +221,16 @@ void Parser::parse_expr(){
                 eval_block = new EvalBlockNode;
                 // read the next singular expression, and assume the next is a closing paren.
                 this->curr_pos++;
-                this->parse_expr();
+                while (this->eval_count != init_count){
+                    this->return_next = true;
+                    this->parse_expr();
+                }
+                this->return_next = false;
                 if (this->node_stack.empty())
                     throw std::runtime_error("syntax error: expected expression (2)");
                 new_node = this->pop_node();
                 eval_block->set_body(new_node);
                 // ensure that thd end of the eval node was encountered
-                if (this->eval_count > init_count)
-                    throw std::runtime_error("syntax error: expected \")\"");
                 this->push_node(eval_block);
                 return;
             // Block enders
@@ -274,6 +292,7 @@ void Parser::parse_expr(){
             case Div:
                 // read the next expression
                 curr_pos++;
+                this->return_next = true;
                 this->parse_expr();
                 // ensure at least two nodes are on the stack
                 if (this->stack_size() < 2)

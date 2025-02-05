@@ -192,7 +192,7 @@ TEST(ParserTest, Blocks){
     val = interpret(
         R"(
             let int node = 5;
-            if (((1 + 5) == 7))
+            if ((1 + 5) == 7)
                 node = 20;
             end
             node;
@@ -203,17 +203,13 @@ TEST(ParserTest, Blocks){
     val = interpret(
         R"(
             let int ctr = 0;
-            while ((ctr != 10))
+            while (ctr != 10)
                 ctr = (ctr + 1);
             end
             ctr;
         )"
     );
     EXPECT_EQ(val.as<int>(), 10);
-    
-
-
-
 }
 
 int main(int argc, char** argv){
