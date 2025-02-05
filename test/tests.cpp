@@ -135,7 +135,7 @@ TEST(ParserTests, BasicCompound){
     // this tests evaluating variables
     val = interpret("let int foo = 10;"\
                     "let int bar = 2;"\
-                    "(foo * bar) == ((3 + 2) * 3);");
+                    "(foo * bar) == (3 + 2 * 3);");
     EXPECT_EQ(val.as<bool>(), false);
 }   
 TEST(ParserTest, Blocks){
@@ -192,7 +192,7 @@ TEST(ParserTest, Blocks){
     val = interpret(
         R"(
             let int node = 5;
-            if ((1 + 5) == 7)
+            if (1 + 5 == 7)
                 node = 20;
             end
             node;

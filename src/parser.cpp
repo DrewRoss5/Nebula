@@ -278,6 +278,7 @@ void Parser::parse_expr(){
             case Greater:
             case Less:
                 curr_pos++;
+                this->return_next = true;
                 this->parse_expr();
                 if (this->stack_size() < 2)
                     throw std::runtime_error("syntax error: expected expression (4)");
