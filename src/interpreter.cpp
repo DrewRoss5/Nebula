@@ -69,7 +69,7 @@ int Interpreter::run(const std::string& statements){
     BlockNode* block;
     Value val;
     try{
-        do{
+        while (true){
             expr = this->parser.next_expr();
             if (!expr)
                 break;
@@ -91,7 +91,6 @@ int Interpreter::run(const std::string& statements){
             else
                 this->eval_stack.push(expr->eval());
         }
-        while(expr); 
     } 
     catch (std::runtime_error e){
         this->err_msg = e.what();
