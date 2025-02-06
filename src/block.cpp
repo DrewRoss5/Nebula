@@ -65,7 +65,9 @@ Value LoopBlockNode::eval(){
     Value cond_val = this->condition->eval();
     if (cond_val.get_type() != BOOL)
         throw std::runtime_error("invalid conditional");
-    while (this->condition->eval().as<bool>())
+    while (this->condition->eval().as<bool>()){
         this->eval_stack.push(BlockNode::eval());
+        //this->scope->clear();
+    }
     return Value(this->eval_stack.top()); 
 }

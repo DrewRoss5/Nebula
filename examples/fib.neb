@@ -1,0 +1,12 @@
+begin
+	let int curr = 1;
+	let int prev = 0;
+	let int iters = 0;
+	while (iters < 10)
+		let int tmp = curr + prev;
+		prev = curr;
+		curr = tmp;
+		println curr;
+		iters = (iters + 1);
+	end
+end

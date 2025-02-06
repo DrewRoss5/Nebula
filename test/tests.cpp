@@ -10,6 +10,7 @@
 #include "../inc/symtable.h"
 #include "../inc/block.h"
 #include "../inc/parser.h"
+#include "../inc/interpreter.h"
 
 /* DEBUG FUNCTIONS */
 void display_token(Token& token){
@@ -38,40 +39,6 @@ bool comp_token_text(const std::vector<Token>& tokens, const std::vector<std::st
     return true;
 }
 
-// this is a simplified version of the interpreter for testing purposes
-Value interpret(const std::string& expr){
-    std::vector<Token> tokens;
-    tokenize(expr, tokens);
-    Parser parser(tokens);
-    parser.parse();
-    Value val;
-    Node* tmp;
-    BlockNode* block;
-    do{
-        tmp = parser.next_expr();
-        if (tmp){
-            // if the value is a block, ensure the correct eval function is called
-            if (tmp->node_type() == Block_N){
-                block = static_cast<BlockNode*>(tmp);
-                switch (block->block_type()){
-                    case BlockType::Conditional:
-                        val = static_cast<CondBlockNode*>(tmp)->eval();
-                        break;
-                    case BlockType::Loop:
-                        val = static_cast<LoopBlockNode*>(tmp)->eval();
-                        break;
-                    default:
-                        val = tmp->eval();
-                        break;
-                }
-            }
-            else
-                val = tmp->eval();
-        }
-    } 
-    while(tmp); 
-    return val;
-}
 
 /* TESTS FOR THE LEXER */
 TEST(LexerTests, CharTokens){
@@ -121,26 +88,25 @@ TEST(SymbolTableTests, General){
 
 }
 
-/* Parser Tests */
 TEST(ParserTests, Basic){
-    Value val = interpret("5 + 10;");
-    EXPECT_EQ(val.as<int>(), 15);
-    val = interpret("let float x = 10.5;");
-    EXPECT_EQ(val.as<double>(), 10.5);
-}
-TEST(ParserTests, BasicCompound){
     // this checks if compound expressions work by doing a simple interpretation of defining and then using a variable
-    Value val = interpret("let int num = 12; num * 2;");
+    Interpreter interpreter;
+    interpreter.run("let int num = 12; num * 2;");
+    Value val = interpreter.result();
     EXPECT_EQ(val.as<int>(), 24);
     // this tests evaluating variables
-    val = interpret("let int foo = 10;"\
-                    "let int bar = 2;"\
-                    "(foo * bar) == (3 + 2 * 3);");
+    interpreter.run(R"(
+                        let int foo = 10;
+                        let int bar = 2;
+                        (foo * bar) == (3 + 2 * 3);
+                    )");
+    val = interpreter.result();
     EXPECT_EQ(val.as<bool>(), false);
 }   
 TEST(ParserTest, Blocks){
     // test a simple block
-    Value val = interpret(
+    Interpreter interpreter;
+    interpreter.run(
         R"(
         begin
             let char a = 'a';
@@ -149,9 +115,10 @@ TEST(ParserTest, Blocks){
         end
         )"
     );
+    Value val = interpreter.result();
     EXPECT_EQ(val.as<bool>(), true);
     // test that blocks can access an outer scope
-    val = interpret(
+    interpreter.run(
         R"(
             let float tmp = 5.0;
             begin
@@ -160,25 +127,20 @@ TEST(ParserTest, Blocks){
             tmp;
         )"
     );
+    val = interpreter.result();
     EXPECT_EQ(val.as<double>(), 5.0);
     // test that an outerscope cannot access a block's variables
-    bool error_raised = false;
-    try{
-        val = interpret(
-            R"(
-                begin
-                    let float tmp = 10.0;
-                end
-                tmp + 2.0;
-            )"
-        );
-    }
-    catch (std::runtime_error){
-        error_raised = true;
-    }
-    EXPECT_TRUE(error_raised);
+    int res = interpreter.run(
+        R"(
+            begin
+                let float tmp = 10.0;
+            end
+            tmp + 2.0;
+        )"
+    );
+    EXPECT_EQ(res, 1);
     // test that conditionals work
-    val = interpret(
+    interpreter.run(
         R"(
             let int node = 5;
             if (true)
@@ -187,20 +149,23 @@ TEST(ParserTest, Blocks){
             node;
         )"
     );
+    val = interpreter.result();
     EXPECT_EQ(val.as<int>(), 20);
     // test a false condition
-    val = interpret(
+    interpreter.run(
         R"(
-            let int node = 5;
-            if (1 + 5 == 7)
-                node = 20;
+            let int five = 5;
+            if (false)
+                five = 20;
             end
-            node;
+            five;
+
         )"
     );
+    val = interpreter.result();
     EXPECT_EQ(val.as<int>(), 5);
     // test a  while loop
-    val = interpret(
+    interpreter.run(
         R"(
             let int ctr = 0;
             while (ctr != 10)
@@ -209,7 +174,18 @@ TEST(ParserTest, Blocks){
             ctr;
         )"
     );
+    val = interpreter.result();
     EXPECT_EQ(val.as<int>(), 10);
+}
+
+TEST(InterpreterTest, Final){
+    // this simple program serves as the first "real" test of nebula, it should calculate the 20th fibonacci number
+    Interpreter interpreter;
+    int res = interpreter.run_file("../examples/fib_no_print.neb");
+    if (res != 0)
+        interpreter.display_err();
+    Value val = interpreter.result();
+    EXPECT_EQ(val.as<int>(), 6765);
 }
 
 int main(int argc, char** argv){

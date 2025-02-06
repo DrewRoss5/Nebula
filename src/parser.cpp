@@ -1,3 +1,4 @@
+#include <iostream>
 #include <stdexcept>
 #include <stack>
 #include <vector>
@@ -71,6 +72,14 @@ void Parser::clear(){
         }
         this->nodes[i] = nullptr;
     }
+}
+
+bool Parser::validate(std::string& err_msg ){
+    if (this->block_stack.size()){
+        err_msg = "syntax error: expected \"end\"";
+        return false;
+    }
+    return true;
 }
 
 void Parser::reset(const std::vector<Token>& new_tokens){

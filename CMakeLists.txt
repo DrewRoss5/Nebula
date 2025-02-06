@@ -10,5 +10,6 @@ add_executable(NebulaTests
                src/symtable.cpp 
                src/block.cpp 
                src/parser.cpp 
+               src/interpreter.cpp
                test/tests.cpp )
 target_link_libraries(NebulaTests PRIVATE GTest::gtest)

@@ -12,6 +12,7 @@ class SymbolTable{
         SymbolTable() {}
         SymbolTable(SymbolTable* parent);
         void create(const std::string& symbol, ValueType type);
+        void clear();
         // getters
         std::shared_ptr<Value> get(const std::string& val);
         bool exists(const std::string& symbol);

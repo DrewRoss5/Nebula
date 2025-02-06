@@ -1,0 +1,11 @@
+let int ctr = 0;
+let int prev = 0;
+let int curr = 1;
+let int tmp = 0;
+while (ctr < 19)
+    tmp = (curr + prev);
+    prev = curr;
+    curr = tmp;
+    ctr = (ctr + 1);
+end;
+curr;

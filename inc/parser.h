@@ -13,11 +13,12 @@
 
 class Parser{
     public:
+        Parser() {this->curr_scope = &this->global_scope;}
         Parser(const std::vector<Token>& tokens);
         ~Parser();
         void parse(); 
         void reset(const std::vector<Token>& new_tokens);
-        bool vaidate(std::string& error_msg);
+        bool validate(std::string& error_msg);
         Node* next_expr();
     private:
         size_t token_count;

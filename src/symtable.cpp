@@ -14,6 +14,11 @@ void SymbolTable::create(const std::string& symbol, ValueType type){
     this->table[symbol] = std::shared_ptr<Value> (Value::create_dyn(type));
 }
 
+// clears all values on the symtable
+void SymbolTable::clear(){
+    this->table.clear();
+}
+
 // returns a pointer to a symbol on the table, or a null pointer if the symbol does not exist
 std::shared_ptr<Value> SymbolTable::get(const std::string& symbol){
     auto val_itt = this->table.find(symbol);
