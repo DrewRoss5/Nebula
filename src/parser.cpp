@@ -210,7 +210,7 @@ void Parser::parse_expr(){
                 // read the conditonal expression
                 curr_pos++;
                 this->parse_expr();
-                if (this->node_stack.empty())
+                if (this->stack_size() == 0)
                     throw std::runtime_error("syntax error: expected expression (1)");
                 condition = this->pop_node();
                 // create the block
@@ -235,7 +235,7 @@ void Parser::parse_expr(){
                     this->parse_expr();
                 }
                 this->return_next = false;
-                if (this->node_stack.empty())
+                if (this->stack_size() == 0)
                     throw std::runtime_error("syntax error: expected expression (2)");
                 new_node = this->pop_node();
                 eval_block->set_body(new_node);
