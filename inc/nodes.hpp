@@ -17,6 +17,7 @@ enum NodeType{
     BoolLogic_N,
     Arith_N,
     Block_N,
+    Print_N,
 };
 
 enum Operator{
@@ -178,4 +179,14 @@ Value ArithNode::calculate(T lhs_val, T rhs_val, bool return_int){
     else    
         return Value::create(FLOAT, ret_val);
 }
+
+class PrintNode: public Node{
+    public:
+        PrintNode(bool newline) {this->type = Print_N; this->newline = newline;}
+        Value eval() override;
+        void push_arg(Node* arg) {this->args.push_back(arg);};
+    private:
+        std::vector<Node*> args;
+        bool newline;
+};
 #endif

@@ -1,6 +1,7 @@
 #ifndef VALUE_H
 #define VALUE_H
 
+#include <iostream>
 #include <vector>
 #include <cstring>
 #include <cstddef>
@@ -31,6 +32,7 @@ class Value{
         bool operator==(const Value& rhs) const;
         ValueType get_type() {return this->type;};
         bool is_null() {return this->type == NULL_TYPE;}
+        friend std::ostream& operator<<(std::ostream& out, const Value& val); 
     private:
         std::vector<std::byte> val;
         ValueType type;

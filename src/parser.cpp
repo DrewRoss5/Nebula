@@ -145,6 +145,7 @@ void Parser::parse_expr(){
         EvalBlockNode* eval_block;
         VarNode* var_node;
         SymbolTable* sym_table;
+        PrintNode* print_node;
         TokenType op;
         std::string sym;
         switch (curr_token.type){
@@ -260,7 +261,6 @@ void Parser::parse_expr(){
                     this->curr_block = this->block_stack.top();
                     this->curr_scope = this->scope_stack.top();
                 }
-
                 push_node(to_copy);
                 return;
             case EvalBlockEnd:
@@ -350,12 +350,25 @@ void Parser::parse_expr(){
                 new_node = new AsgnNode(var_node, rhs);
                 this->push_node(new_node);
                 continue;
+            case Print:
+            case Println:
+                curr_pos++;
+                print_node = new PrintNode(curr_token.type == Println);
+                init_count = this->stack_size();
+                // read every node to the end of the statement as an argument
+                this->return_next = false;
+                this->parse_expr();
+                while (this->stack_size() != init_count)
+                    print_node->push_arg(this->pop_node());
+                this->push_node(print_node);
+                break;
             case Sym:
                 curr_pos++;
                 if (curr_scope->exists(curr_token.txt)){
                     var_node = new VarNode(this->curr_scope->get(curr_token.txt), true);
                     this->push_node(var_node);
-                    continue;
+                    if (this->return_next)
+                        return;
                 }
                 else{
                     new_node = new SymNode(curr_token.txt);

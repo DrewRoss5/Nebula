@@ -30,3 +30,25 @@ bool Value::operator==(const Value& rhs) const{
      }
      return false;
 }
+
+// displays the value's unwrapped form
+std::ostream& operator<<(std::ostream& out, const Value& val){
+    switch (val.type){
+        case INT:
+            out << val.as<int>();
+            break;
+        case FLOAT:
+            out << val.as<int>();
+            break;
+        case CHAR:
+            out << val.as<char>();
+            break;
+        case BOOL:
+            out << (val.as<bool>()) ? "true" : "false";
+            break;
+        case NULL_TYPE:
+            out << "null";
+            break;
+    }
+    return out;
+}

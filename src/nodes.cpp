@@ -121,3 +121,14 @@ Value ArithNode::eval(){
     }
     return Value(NULL_TYPE);
 }
+
+/* PrintNode functions */
+Value PrintNode::eval(){
+    for (int i = this->args.size()-1; i >= 0; i--)
+        std::cout << args[i]->eval();
+    if (this->newline)
+        std::cout << std::endl;
+    else
+        std::cout << std::flush;
+    return Value(NULL_TYPE);
+}

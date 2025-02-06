@@ -13,9 +13,6 @@
 #include "../inc/interpreter.h"
 
 /* DEBUG FUNCTIONS */
-void display_token(Token& token){
-    std::cout << "Token ID: " << token.type << ", Token content: " << token.txt << std::endl;
-}
 bool comp_token_types(const std::vector<Token>& tokens, const std::vector<TokenType>& expected){
     if (tokens.size() != expected.size()){
         std::cout << "Non-matching sizes: expected " << expected.size() << " tokens, got " << tokens.size() << std::endl; 
@@ -88,7 +85,7 @@ TEST(SymbolTableTests, General){
 
 }
 
-TEST(ParserTests, Basic){
+TEST(ParserTest, Basic){
     // this checks if compound expressions work by doing a simple interpretation of defining and then using a variable
     Interpreter interpreter;
     interpreter.run("let int num = 12; num * 2;");
@@ -177,11 +174,30 @@ TEST(ParserTest, Blocks){
     val = interpreter.result();
     EXPECT_EQ(val.as<int>(), 10);
 }
+TEST(ParserTest, Printing){
+    std::cout << "This should print all numbers between one and 5, followed by all numbers 6-10" << std::endl;
+    Interpreter interpreter;
+    interpreter.run(
+        R"(
+            let int num = 1;
+            while (num != 6)
+                println num;
+                num = num + 1;
+            end
+            while (num != 11)
+                print num ' ';
+                num = num + 1;
+            end;
+            println;
+        )"
+    );
+}
+
 
 TEST(InterpreterTest, Final){
     // this simple program serves as the first "real" test of nebula, it should calculate the 20th fibonacci number
     Interpreter interpreter;
-    int res = interpreter.run_file("../examples/fib_no_print.neb");
+    int res = interpreter.run_file("../examples/fib.neb");
     if (res != 0)
         interpreter.display_err();
     Value val = interpreter.result();

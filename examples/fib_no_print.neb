@@ -7,7 +7,7 @@ begin
         tmp = (curr + prev);
         prev = curr;
         curr = tmp;
-        ctr = (ctr + 1);
-    end;
+        ctr = ctr + 1;
+    end
     curr;
-end;
+end

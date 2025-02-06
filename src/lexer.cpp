@@ -74,6 +74,8 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
         {"end", BlockEnd},
         {"||", Or},
         {"&&", And},
+        {"print", Print},
+        {"println", Println}
 
     };
     std::string token_str;

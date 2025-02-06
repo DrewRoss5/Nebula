@@ -35,6 +35,9 @@ enum TokenType{
     Sub,
     Div,
     Mul,
+    // io operators
+    Print,
+    Println,
     // other types
     Defn,
     Sym,
