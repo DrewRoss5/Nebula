@@ -46,9 +46,8 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
     std::unordered_map<char, TokenType> char_tokens = {
         {'+', Add},
         {'-', Sub},
-        {'*', Mul},
+        {'*', Other},
         {'/', Div},
-        {'^', Pow},
         {'%', Mod},
         {'>', Greater},
         {'<', Less},
@@ -84,7 +83,8 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
     std::string token_str;
     while (str_pos < expr_len){
         token_str.clear();
-        char chr = expr[str_pos++];
+        char chr = expr[str_pos];
+        str_pos += 1;
         auto type_itt = char_tokens.find(chr);
         if (type_itt != char_tokens.end()){
             token_str.push_back(chr);
@@ -95,6 +95,14 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
             }
             std::string chr_str;
             switch (chr){
+            case '*':
+                if (str_pos < expr_len && expr[str_pos] == '*'){
+                    tokens.push_back({Pow, "**"});
+                    str_pos++;
+                }
+                else 
+                    tokens.push_back({Mul, "*"});
+                break;
             case '!':
                 if (str_pos < expr_len && expr[str_pos] == '='){
                     tokens.push_back({Neq, "!="});
@@ -113,7 +121,7 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
             break;
             case '\'':
                 // ensure the quore proceeds a valid character literal 
-                if (str_pos+1 >= expr_len || expr[str_pos+1] != '\'')
+                if (str_pos >= expr_len || expr[str_pos+1] != '\'')
                     throw std::runtime_error("invalid character literal");
                 chr_str.push_back(expr[str_pos]);
                 // push the literal to the token vector
