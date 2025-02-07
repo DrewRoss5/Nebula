@@ -8,7 +8,7 @@ begin
         prev = curr;
         curr = tmp;
         ctr = (ctr + 1);
-		println curr;
-    end;
-	curr;
-end;
+	println curr;
+    end
+    curr;
+end
