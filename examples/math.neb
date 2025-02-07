@@ -1,0 +1,7 @@
+begin
+    let int lhs = 5;
+    let int rhs = 3;
+    println (lhs ^ rhs);
+    println (rhs % lhs);
+    lhs;
+end

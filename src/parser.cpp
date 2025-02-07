@@ -22,6 +22,8 @@ std::unordered_map<TokenType, Operator> OPERATOR_MAP{
         {TokenType::Sub, Operator::ArithSub},
         {TokenType::Mul, Operator::ArithMul},
         {TokenType::Div, Operator::ArithDiv},
+        {TokenType::Mod, Operator::ArithMod},
+        {TokenType::Pow, Operator::ArithPow}
     };
 
 std::unordered_map<TokenType, ValueType> TYPE_MAP{
@@ -300,6 +302,8 @@ void Parser::parse_expr(){
             case Sub:
             case Mul:
             case Div:
+            case Mod:
+            case Pow:
                 // read the next expression
                 curr_pos++;
                 this->return_next = true;

@@ -48,6 +48,8 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
         {'-', Sub},
         {'*', Mul},
         {'/', Div},
+        {'^', Pow},
+        {'%', Mod},
         {'>', Greater},
         {'<', Less},
         {'(', EvalBlock},

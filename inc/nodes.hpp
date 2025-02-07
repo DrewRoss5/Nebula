@@ -30,7 +30,9 @@ enum Operator{
     ArithAdd,
     ArithSub,
     ArithMul,
-    ArithDiv
+    ArithDiv,
+    ArithMod,
+    ArithPow,
 };
 
 // the base class that all nodes in the AST must derive from
@@ -173,6 +175,16 @@ Value ArithNode::calculate(T lhs_val, T rhs_val, bool return_int){
         case ArithDiv:
             ret_val = lhs_val / rhs_val;
             break;
+        case ArithMod:
+            return_int = true;
+            ret_val = static_cast<int>(lhs_val) % static_cast<int>(rhs_val);
+            break;
+        case ArithPow:
+            ret_val = 1;
+            for (int i = 0; i < lhs_val; i++)
+                ret_val *= rhs_val;
+            break;
+    
     }
     if (return_int)
         return Value::create(INT, static_cast<int>(ret_val));
