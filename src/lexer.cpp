@@ -1,3 +1,4 @@
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -15,7 +16,7 @@ Token parse_token(const std::string& expr, size_t& str_pos, const std::unordered
     }
     // determine the token type
     auto type = word_tokens.find(token_str);
-    if (type != word_tokens.end())
+    if (type != word_tokens.end()) 
         return Token(type->second, token_str);
     // we assume any unrecognized character is a user-defined symbol
     return Token(Sym, token_str);
@@ -52,11 +53,11 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
         {'(', EvalBlock},
         {')', EvalBlockEnd},
         {';', Break},
+        {'\n', Break},
         {'=', Other},
         {'\'', Other},
         {'!', Other},
         {' ', Other},
-        {'\n', Other},
         {'\t', Other}
     };
     std::unordered_map<std::string, TokenType> word_tokens= {

@@ -10,7 +10,7 @@
 
 // this displays the last thrown erro message
 void Interpreter::display_err(){
-    std::cout << "\033[31mnebula error: \033[0m"  << this->err_msg << std::endl;
+    std::cerr << "\033[31mnebula error: \033[0m"  << this->err_msg << std::endl;
 }
 // tokenizes a string and updates the interpreter's tokens, returns 0 on success and 1 on failure
 int Interpreter::set_tokens(const std::string& expr){
@@ -39,7 +39,7 @@ int Interpreter::run_file(const std::string& file_path){
     }
     std::string tmp, src_code;
     while (std::getline(in, tmp))
-        src_code += tmp;
+        src_code += tmp + '\n';
     in.close();
     return this->run(src_code);
 }

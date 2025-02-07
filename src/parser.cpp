@@ -132,7 +132,7 @@ void Parser::parse(){
 
 // parses tokens until a complete statement is formed
 void Parser::parse_expr(){
-    while (this->curr_pos < this->token_count){
+    while (this->curr_pos <= this->token_count){
         Token curr_token = this->tokens[this->curr_pos];
         int int_lit, init_count;
         double float_lit;
@@ -273,7 +273,7 @@ void Parser::parse_expr(){
             // TODO: Condense this using a porse_binary_expr function
             case And:
             case Or:
-                curr_pos++;
+                this->curr_pos++;
                 this->parse_expr();
                 if (this->stack_size() < 2)
                     throw std::runtime_error("syntax error: expected expression (3)");
