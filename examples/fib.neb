@@ -10,4 +10,5 @@ begin
         curr = tmp
         ctr = (ctr + 1)
     end
+    curr
 end

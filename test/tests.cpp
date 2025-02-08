@@ -139,28 +139,33 @@ TEST(ParserTest, Blocks){
     // test that conditionals work
     interpreter.run(
         R"(
-            let int node = 5;
-            if (true)
-                node = 20;
+            begin
+                let int n = 5;
+                let char out = 'a'
+                if ((n % 2) != 0)
+                    out = 'b'
+                end 
+                out
             end
-            node;
         )"
     );
     val = interpreter.result();
-    EXPECT_EQ(val.as<int>(), 20);
+    EXPECT_EQ(val.as<char>(), 'b');
     // test a false condition
     interpreter.run(
         R"(
-            let int five = 5;
-            if (false)
-                five = 20;
+            begin
+                let int n = 5;
+                let char out = 'a'
+                if ((n % 2) == 0)
+                    out = 'b'
+                end 
+                out
             end
-            five;
-
         )"
     );
     val = interpreter.result();
-    EXPECT_EQ(val.as<int>(), 5);
+    EXPECT_EQ(val.as<char>(), 'a');
     // test a  while loop
     interpreter.run(
         R"(
