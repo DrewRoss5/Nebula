@@ -99,7 +99,7 @@ Node* Parser::pop_node(){
     Node* ret_val;
     if (this->curr_block)
         ret_val = this->curr_block->pop_statement();
-    else{
+    else {
         ret_val = this->node_stack.back();
         this->node_stack.pop_back();
     }
@@ -256,8 +256,7 @@ void Parser::parse_expr(){
                 if (this->block_stack.empty()){
                     this->curr_block = nullptr;
                     this->curr_scope = &this->global_scope;
-                }
-                else{
+                } else {
                     this->curr_block = this->block_stack.top();
                     this->curr_scope = this->scope_stack.top();
                 }
@@ -333,8 +332,7 @@ void Parser::parse_expr(){
                     this->push_node(var_node);
                     if (this->return_next)
                         return;
-                }
-                else{
+                } else {
                     new_node = new SymNode(curr_token.txt);
                     this->push_node(new_node);
                     return;

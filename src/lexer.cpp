@@ -100,25 +100,25 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
                 if (str_pos < expr_len && expr[str_pos] == '*'){
                     tokens.push_back({Pow, "**"});
                     str_pos++;
-                }
-                else 
+                } else { 
                     tokens.push_back({Mul, "*"});
+                }
                 break;
             case '!':
                 if (str_pos < expr_len && expr[str_pos] == '='){
                     tokens.push_back({Neq, "!="});
                     str_pos++;
-                }
-                else
+                } else {
                     tokens.push_back(Not);
+                }
             break;
             case '=':
                 if (str_pos < expr_len && expr[str_pos] == '='){
                     tokens.push_back({Eq, "=="});
                     str_pos++;
-                }
-                else
+                } else {
                     tokens.push_back({Asgn, "="});
+                }
             break;
             case '\'':
                 // ensure the quore proceeds a valid character literal 
