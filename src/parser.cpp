@@ -63,11 +63,6 @@ void Parser::clear(){
     }
     // this map keeps track of all pointers that have been deleted. A map is used for O(1) lookup times
     std::unordered_map<Node*, bool> freed_ptrs;
-    // delete all dynamically allocated nodes and symbol tabkles
-    for (int i = 0; i < this->scopes.size(); i++){
-        delete this->scopes[i];
-        this->scopes[i] = nullptr;
-    }
     for (int i = 0; i < this->nodes.size(); i++){
         if (freed_ptrs.count(this->nodes[i]) == 0){
             delete this->nodes[i];
@@ -203,11 +198,7 @@ void Parser::parse_expr(){
                 // create a new block and push it onto the stack
                 sym_table = new SymbolTable(this->curr_scope);
                 new_block = new BlockNode(sym_table);
-                scope_stack.push(sym_table);
-                block_stack.push(new_block);
-                // set the new block as current
-                this->curr_block = new_block;
-                this->curr_scope = sym_table;
+                this->push_block(new_block);
                 this->curr_pos++;
                 continue;
             case CondBlock:
@@ -219,15 +210,13 @@ void Parser::parse_expr(){
                     throw std::runtime_error("syntax error: expected expression (1)");
                 condition = this->pop_node();
                 // create the block
+                sym_table = new SymbolTable(this->curr_scope);
                 if (curr_token.type == CondBlock) {
                     new_block = new CondBlockNode(sym_table, condition);
                 } else {
                     new_block = new LoopBlockNode(sym_table, condition);
                 }
-                sym_table = new SymbolTable(this->curr_scope);
-                this->block_stack.push(new_block);
-                this->scope_stack.push(sym_table);
-                this->curr_block = new_block;
+                this->push_block(new_block);
                 break;
             case ElseBlock:
                 curr_pos++;
@@ -384,4 +373,12 @@ void Parser::parse_bin_expr(NodeType type, Operator op){
         this->push_node(new AsgnNode(static_cast<VarNode*>(lhs), rhs));
         break;
     }
+}
+
+// this function creates a new block, and sets it to the current scope 
+void Parser::push_block(BlockNode* block){
+    this->curr_block = block;
+    this->block_stack.push(block);
+    this->scope_stack.push(block->get_scope());
+    this->curr_scope = block->get_scope();
 }

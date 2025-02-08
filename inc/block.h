@@ -20,6 +20,7 @@ class BlockNode: public Node{
         BlockNode(SymbolTable* scope_ptr);
         ~BlockNode();
         BlockType block_type() {return this->block_t;}
+        SymbolTable* get_scope() {return this->scope;}
         virtual Node* pop_statement();
         virtual size_t statement_count() {return this->statements.size();}
         virtual Value eval() override;

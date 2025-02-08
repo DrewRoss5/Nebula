@@ -24,6 +24,7 @@ class Parser{
         Node* pop_node();
         size_t stack_size();
         void push_node(Node* node);
+        void push_block(BlockNode* block);
         void parse_expr();
         void parse_bin_expr(NodeType type, Operator op);
         void clear();

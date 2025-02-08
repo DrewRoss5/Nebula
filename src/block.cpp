@@ -14,6 +14,7 @@ BlockNode::BlockNode(SymbolTable* scope_ptr){
 BlockNode::~BlockNode(){
     for (int i = 0; i < this->statements.size(); i++)
         delete this->statements[i];
+    delete this->scope;
 }
 Value BlockNode::eval(){
     size_t statement_count = statements.size();
