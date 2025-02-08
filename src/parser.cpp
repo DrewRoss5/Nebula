@@ -23,7 +23,8 @@ std::unordered_map<TokenType, Operator> OPERATOR_MAP{
         {TokenType::Mul, Operator::ArithMul},
         {TokenType::Div, Operator::ArithDiv},
         {TokenType::Mod, Operator::ArithMod},
-        {TokenType::Pow, Operator::ArithPow}
+        {TokenType::Pow, Operator::ArithPow},
+        {TokenType::Asgn, Operator::Assignment}
     };
 
 std::unordered_map<TokenType, ValueType> TYPE_MAP{
@@ -280,51 +281,24 @@ void Parser::parse_expr(){
                 this->eval_count--;
                 return;
             // Binary Expressions
-            // TODO: Condense this using a porse_binary_expr function
             case And:
             case Or:
-                this->curr_pos++;
-                this->parse_expr();
-                if (this->stack_size() < 2)
-                    throw std::runtime_error("syntax error: expected expression (3)");
-                rhs = this->pop_node();
-                lhs = this->pop_node();
-                new_node = new BoolLogicNode(lhs, rhs, OPERATOR_MAP[curr_token.type]);
-                this->push_node(new_node);
-                return;
+                parse_bin_expr(BoolLogic_N, OPERATOR_MAP[curr_token.type]);
+                break;
             case Eq:
             case Neq:
             case Greater:
             case Less:
-                curr_pos++;
-                this->return_next = true;
-                this->parse_expr();
-                if (this->stack_size() < 2)
-                    throw std::runtime_error("syntax error: expected expression (4)");
-                rhs = this->pop_node();
-                lhs = this->pop_node();
-                new_node = new CompNode(lhs, rhs, OPERATOR_MAP[curr_token.type]);
-                this->push_node(new_node);
-                continue;
+                parse_bin_expr(Comp_N, OPERATOR_MAP[curr_token.type]);
+                break;
             case Add:
             case Sub:
             case Mul:
             case Div:
             case Mod:
             case Pow:
-                // read the next expression
-                curr_pos++;
-                this->return_next = true;
-                this->parse_expr();
-                // ensure at least two nodes are on the stack
-                if (this->stack_size() < 2)
-                    throw std::runtime_error("syntax error: expected expression (5)");
-                //generate  the boolean expression
-                rhs = this->pop_node();
-                lhs = this->pop_node();
-                new_node = new ArithNode(lhs, rhs, OPERATOR_MAP[curr_token.type]);
-                this->push_node(new_node);
-                continue;
+                parse_bin_expr(Arith_N, OPERATOR_MAP[curr_token.type]);
+                break;
             // Variable-related nodes
             case Defn:
                 // parse the next two nodes
@@ -349,19 +323,8 @@ void Parser::parse_expr(){
                 this->push_node(new_node);
                 continue;
             case Asgn:
-                // parse the next two nodes
-                curr_pos++;
-                this->parse_expr();
-                if (this->stack_size() < 2)
-                    throw std::runtime_error("syntax error: expected expression (7)");
-                rhs = this->pop_node();
-                lhs = this->pop_node();
-                if (lhs->node_type() != Var_N)
-                    throw std::runtime_error("syntax error: cannot assign to expression");
-                var_node = static_cast<VarNode*>(lhs);
-                new_node = new AsgnNode(var_node, rhs);
-                this->push_node(new_node);
-                continue;
+                parse_bin_expr(Asgn_N, Assignment);
+                break;
             case Print:
             case Println:
                 curr_pos++;
@@ -393,5 +356,32 @@ void Parser::parse_expr(){
                 return;
 
         }
+    }
+}
+
+// this function parses a binary expression (such as comparison or arithmetic) and pushes it to the top of the node stack
+void Parser::parse_bin_expr(NodeType type, Operator op){
+    curr_pos++;
+    this->return_next = (type != Asgn_N); // this should always read the next singular expresssion, unless we're assigning to a variable
+    this->parse_expr();
+    if (this->stack_size() < 2)
+        throw std::runtime_error("syntax error: expected expression (7)");
+    Node* rhs = this->pop_node();
+    Node* lhs = this->pop_node();
+    switch (type){
+    case Arith_N:
+        this->push_node(new ArithNode(lhs, rhs, op));
+        break;
+    case Comp_N:
+        this->push_node(new CompNode(lhs, rhs, op));
+        break;
+    case BoolLogic_N:
+        this->push_node(new BoolLogicNode(lhs, rhs, op));
+        break;
+    case Asgn_N:
+        if (lhs->node_type() != Var_N)
+            throw std::runtime_error("syntax error: cannot assign to non-variable expression");
+        this->push_node(new AsgnNode(static_cast<VarNode*>(lhs), rhs));
+        break;
     }
 }

@@ -166,14 +166,13 @@ TEST(ParserTest, Blocks){
     );
     val = interpreter.result();
     EXPECT_EQ(val.as<char>(), 'a');
-    std::cout << "parsed earlier" << std::endl;
     // test an else
     interpreter.run(
         R"(
         begin 
             let int x = 5;
             if (x > 10)
-                x = 10
+                x = 0
             else
                 x = x * 2
             end
@@ -219,7 +218,7 @@ TEST(ParserTest, Printing){
 TEST(InterpreterTest, Final){
     // this simple program serves as the first "real" test of nebula, it should calculate the 20th fibonacci number
     Interpreter interpreter;
-    int res = interpreter.run_file("../examples/fib.neb");
+    int res = interpreter.run_file("../examples/fib_no_print.neb");
     if (res != 0)
         interpreter.display_err();
     Value val = interpreter.result();

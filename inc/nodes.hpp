@@ -33,6 +33,7 @@ enum Operator{
     ArithDiv,
     ArithMod,
     ArithPow,
+    Assignment,
 };
 
 // the base class that all nodes in the AST must derive from
