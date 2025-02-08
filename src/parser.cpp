@@ -144,6 +144,7 @@ void Parser::parse_expr(){
         TypeNode* var_type;
         SymNode* var_name;
         BlockNode* new_block;
+        CondBlockNode* conditional;
         EvalBlockNode* eval_block;
         VarNode* var_node;
         SymbolTable* sym_table;
@@ -226,7 +227,14 @@ void Parser::parse_expr(){
                 this->block_stack.push(new_block);
                 this->scope_stack.push(sym_table);
                 this->curr_block = new_block;
-                continue;
+                break;
+            case ElseBlock:
+                curr_pos++;
+                if (this->curr_block->block_type() != Conditional)
+                    throw std::runtime_error("syntax error: unexpected token \"else\"");
+                conditional = static_cast<CondBlockNode*>(this->curr_block);
+                conditional->set_else(new BlockNode(this->curr_scope->get_parent())); // this doesn't leak because the conditional block free's the else clause's memeory
+                break;
             case EvalBlock:
                 init_count = this->eval_count;
                 this->eval_count++;

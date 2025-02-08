@@ -166,6 +166,23 @@ TEST(ParserTest, Blocks){
     );
     val = interpreter.result();
     EXPECT_EQ(val.as<char>(), 'a');
+    std::cout << "parsed earlier" << std::endl;
+    // test an else
+    interpreter.run(
+        R"(
+        begin 
+            let int x = 5;
+            if (x > 10)
+                x = 10
+            else
+                x = x * 2
+            end
+            x
+        end
+        )"
+    );
+    val = interpreter.result();
+    EXPECT_EQ(val.as<int>(), 10);
     // test a  while loop
     interpreter.run(
         R"(

@@ -16,6 +16,7 @@ class SymbolTable{
         // getters
         std::shared_ptr<Value> get(const std::string& val);
         bool exists(const std::string& symbol);
+        SymbolTable* get_parent() {return this->parent;}
     private:
         SymbolTable* parent {nullptr};
         std::unordered_map<std::string, std::shared_ptr<Value>> table;

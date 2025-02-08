@@ -63,6 +63,7 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
     };
     std::unordered_map<std::string, TokenType> word_tokens= {
         {"if", CondBlock},
+        {"else", ElseBlock},
         {"while", LoopBlock},
         {"block", Block},
         {"int", TypeInt},

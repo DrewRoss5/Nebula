@@ -43,13 +43,44 @@ CondBlockNode::CondBlockNode(SymbolTable* scope_ptr, Node* cond_ptr){
     this->block_t = Conditional;
     this->eval_stack.push(Value(NULL_TYPE)); // this is so that the node can evaluate to something, even if the condition is false
 }
+CondBlockNode::~CondBlockNode(){
+    delete this->else_body;
+    BlockNode::~BlockNode();
+}
+/* 
+    this sets the given block to the conditional block's else clause, all nodes to pushed to the conditional after this function is
+    called will be pused to the else clause
+*/
+void CondBlockNode::set_else(BlockNode* else_body){
+    if (this->else_body)
+        throw std::runtime_error("cannot have multiple else clauses in one if body");
+    this->else_body = else_body;
+    this->eval_else = true;
+}
+void CondBlockNode::push_statement(Node* statement){
+    if (this->eval_else)
+        this->else_body->push_statement(statement);
+    else
+        this->statements.push_back(statement);
+}
+Node* CondBlockNode::pop_statement(){
+    if (this->eval_else)
+        return this->else_body->pop_statement();
+    return BlockNode::pop_statement();   
+}
+size_t CondBlockNode::statement_count(){
+    if (this->else_body)
+        return this->else_body->statement_count();
+    return this->statements.size();
+}
 Value CondBlockNode::eval(){
     Value cond_val = this->condition->eval();
     if (cond_val.get_type() != BOOL)
         throw std::runtime_error("invalid conditional");
-    if (cond_val.as<bool>()){
+    if (cond_val.as<bool>())
         return BlockNode::eval();
-    }
+    if (this->else_body)
+        return else_body->eval();
     return Value(this->eval_stack.top());
 }
 

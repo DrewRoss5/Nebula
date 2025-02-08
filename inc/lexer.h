@@ -18,6 +18,7 @@ enum TokenType{
     // block types
     Block,
     CondBlock,
+    ElseBlock,
     LoopBlock,
     EvalBlock,
     BlockEnd,

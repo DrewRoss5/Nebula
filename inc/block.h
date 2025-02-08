@@ -20,8 +20,8 @@ class BlockNode: public Node{
         BlockNode(SymbolTable* scope_ptr);
         ~BlockNode();
         BlockType block_type() {return this->block_t;}
-        size_t statement_count() {return this->statements.size();}
-        Node* pop_statement();
+        virtual Node* pop_statement();
+        virtual size_t statement_count() {return this->statements.size();}
         virtual Value eval() override;
         virtual void push_statement(Node* statement);
     protected:
@@ -44,9 +44,16 @@ class EvalBlockNode: public BlockNode{
 class CondBlockNode: public BlockNode{
     public:
         CondBlockNode(SymbolTable* scope_ptr, Node* cond_ptr);
+        ~CondBlockNode();
         Value eval() override;
+        void set_else(BlockNode* else_body);
+        Node* pop_statement() override;
+        void push_statement(Node* statement) override;
+        size_t statement_count() override;
     private:
+        bool eval_else {false};
         Node* condition;
+        BlockNode* else_body {nullptr};
 };
 
 class LoopBlockNode: public BlockNode{
