@@ -73,23 +73,7 @@ int Interpreter::run(const std::string& statements){
             expr = this->parser.next_expr();
             if (!expr)
                 break;
-            // if the value is a block, ensure the correct eval function is called
-            else if (expr->node_type() == Block_N){
-                block = static_cast<BlockNode*>(expr);
-                switch (block->block_type()){
-                    case BlockType::Conditional:
-                        this->eval_stack.push(static_cast<CondBlockNode*>(expr)->eval());
-                        break;
-                    case BlockType::Loop:
-                        this->eval_stack.push(static_cast<LoopBlockNode*>(expr)->eval());
-                        break;
-                    default:
-                        this->eval_stack.push(block->eval());
-                        break;
-                }
-            }
-            else
-                this->eval_stack.push(expr->eval());
+            this->eval_stack.push(expr->eval());
         }
     } 
     catch (std::runtime_error e){
