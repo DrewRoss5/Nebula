@@ -336,7 +336,6 @@ void Parser::parse_expr(){
             case ParamOpen:
                 if ((curr_pos + 3) > this->token_count ||  this->tokens[curr_pos + 2].type !=  ParamClose)
                     throw std::runtime_error("syntax error: expected token ']");
-                std::cout << "passed 1" << std::endl;
                 interior = this->tokens[curr_pos + 1];
                 switch (interior.type){
                     case IntLiteral:
