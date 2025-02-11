@@ -10,7 +10,7 @@ VarNode::VarNode(const std::shared_ptr<Value>& val, bool initialize){
     this->val = val;
     this->val_type = val->get_type();
     this->initialized = initialize;
-    this->type = NodeType::Var_N;
+    this->node_type = NodeType::Var_N;
 }
 // returns the current value of the variable 
 Value VarNode::eval(){
@@ -34,7 +34,7 @@ void VarNode::assign(const Value& new_val){
 AsgnNode::AsgnNode(VarNode* lhs, Node* rhs){
     this->rhs = rhs;
     this->lhs = lhs;
-    this->type = NodeType::Asgn_N;
+    this->node_type = NodeType::Asgn_N;
 }
 // assigns lhs to rhs and returns the new value of lhs. This throws an exception if rhs evaluates to a different type than rhs
 Value AsgnNode::eval(){
@@ -50,7 +50,7 @@ CompNode::CompNode(Node* lhs, Node* rhs, Operator op){
     this->lhs = lhs;
     this->rhs = rhs;
     this->op = op;
-    this->type = NodeType::Comp_N;
+    this->node_type = NodeType::Comp_N;
 }
 Value CompNode::eval(){
     Value lhs_val = this->lhs->eval();
@@ -80,7 +80,7 @@ BoolLogicNode::BoolLogicNode(Node* lhs, Node* rhs, Operator op){
     this->lhs = lhs;
     this->rhs = rhs;
     this->op = op;
-    this->type = NodeType::BoolLogic_N;
+    this->node_type = NodeType::BoolLogic_N;
 }
 Value BoolLogicNode::eval(){
     Value lhs_val = lhs->eval();
@@ -104,7 +104,7 @@ ArithNode::ArithNode(Node* lhs, Node* rhs, Operator op){
     this->lhs = lhs;
     this->rhs = rhs;
     this->op = op;
-    this->type = NodeType::Arith_N;
+    this->node_type = NodeType::Arith_N;
 }
 Value ArithNode::eval(){
     Value lhs_val = this->lhs->eval();
@@ -131,4 +131,24 @@ Value PrintNode::eval(){
     else
         std::cout << std::flush;
     return Value(NULL_TYPE);
+}
+
+/* ParamNode Functions */
+ParamNode::ParamNode(ParamType param_type, unsigned int init_val){
+    this->param_type = param_type;
+    this->node_type = Param_N;
+    if (this->param_type == Index)
+        this->index_no = init_val;
+    else
+        this->val_type = static_cast<ValueType>(init_val);
+}
+int ParamNode::get_index(){
+    if (this->param_type != Index)
+        throw std::runtime_error("Cannot get the index of a non-numeric parameter");
+    return this->index_no;
+}
+ValueType ParamNode::get_val_type(){
+    if (this->param_type != Type)
+        throw std::runtime_error("Cannot get the type of a non-type parameter");
+    return this->val_type;
 }

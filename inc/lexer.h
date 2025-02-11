@@ -41,6 +41,10 @@ enum TokenType{
     // io operators
     Print,
     Println,
+    // array-related typs;
+    Arr,
+    ParamOpen,
+    ParamClose,
     // other types
     Defn,
     Sym,
@@ -50,6 +54,7 @@ enum TokenType{
 };
 
 struct Token{
+    Token() {}
     Token(TokenType type) {this->type = type; this->txt = "";};
     Token(TokenType type, const std::string& txt) {this->type = type; this->txt = txt;};
     TokenType type;

@@ -16,7 +16,7 @@ enum BlockType{
 
 class BlockNode: public Node{
     public:
-        BlockNode() {this->type = Block_N; this->block_t = Base;}
+        BlockNode() {this->node_type = Block_N; this->block_t = Base;}
         BlockNode(SymbolTable* scope_ptr);
         ~BlockNode();
         BlockType block_type() {return this->block_t;}
@@ -34,7 +34,7 @@ class BlockNode: public Node{
 
 class EvalBlockNode: public BlockNode{
     public: 
-        EvalBlockNode() {this->type = Block_N; this->block_t = Eval;}
+        EvalBlockNode() {this->node_type = Block_N; this->block_t = Eval;}
         Value eval() override;
         void set_body(Node* body) {this->body = body;}
         void push_statement(Node* statement) override {this->body = statement;};

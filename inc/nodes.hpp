@@ -18,6 +18,12 @@ enum NodeType{
     Arith_N,
     Block_N,
     Print_N,
+    Param_N
+};
+
+enum ParamType{
+    Index,
+    Type
 };
 
 enum Operator{
@@ -33,22 +39,22 @@ enum Operator{
     ArithDiv,
     ArithMod,
     ArithPow,
-    Assignment,
+    Assignment
 };
 
 // the base class that all nodes in the AST must derive from
 class Node{
     public:
         virtual Value eval() = 0;      
-        NodeType node_type() {return this->type;}
+        NodeType get_node_type() {return this->node_type;}
     protected:
-        NodeType type;
+        NodeType node_type;
 };
 
 // this is the simplest type of node, it simply evaluates to a given value
 class LiteralNode: public Node{
     public:
-        LiteralNode(const Value& val) {this->value = val; this->type = Literal_N;};
+        LiteralNode(const Value& val) {this->value = val; this->node_type = Literal_N;};
         Value eval() override {return this->value;};
     private:
         Value value;
@@ -57,7 +63,7 @@ class LiteralNode: public Node{
 // this node only holds a user defined symbol
 class SymNode: public Node{
     public:
-        SymNode(const std::string& sym) {this->symbol = sym; this->type = Sym_N;}
+        SymNode(const std::string& sym) {this->symbol = sym; this->node_type = Sym_N;}
         Value eval() override {return std::move(Value(NULL_TYPE));}
         std::string get_sym() {return std::move(this->symbol);}
     private:
@@ -67,7 +73,7 @@ class SymNode: public Node{
 // this node only holds the name of a type
 class TypeNode: public Node{
     public: 
-        TypeNode(ValueType type) {this->val_type = type; this->type = Type_N;};
+        TypeNode(ValueType type) {this->val_type = type; this->node_type = Type_N;};
         Value eval() override {return std::move(Value(NULL_TYPE));};
         ValueType get_type() {return this->val_type;}
     private:
@@ -77,7 +83,7 @@ class TypeNode: public Node{
 // this node represents a variable
 class VarNode: public Node{
     public:
-        VarNode(ValueType val_type) {this->val_type = val_type; this->initialized = false; this->type = Var_N;}
+        VarNode(ValueType val_type) {this->val_type = val_type; this->initialized = false; this->node_type = Var_N;}
         VarNode(const std::shared_ptr<Value>& val, bool initialized);
         Value eval() override; 
         ValueType get_type() {return this->val_type;}
@@ -195,11 +201,23 @@ Value ArithNode::calculate(T lhs_val, T rhs_val, bool return_int){
 
 class PrintNode: public Node{
     public:
-        PrintNode(bool newline) {this->type = Print_N; this->newline = newline;}
+        PrintNode(bool newline) {this->node_type = Print_N; this->newline = newline;}
         Value eval() override;
         void push_arg(Node* arg) {this->args.push_back(arg);};
     private:
         std::vector<Node*> args;
         bool newline;
+};
+
+class ParamNode: public Node{
+    public:
+        ParamNode(ParamType param_type, unsigned int init_val);
+        Value eval() override {return std::move(Value(NULL_TYPE));}
+        int get_index();
+        ValueType get_val_type();
+    private:
+        int index_no;
+        ValueType val_type;
+        ParamType param_type;
 };
 #endif

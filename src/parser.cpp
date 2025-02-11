@@ -34,6 +34,13 @@ std::unordered_map<TokenType, ValueType> TYPE_MAP{
     {TypeChar, ValueType::CHAR},
 };
 
+std::unordered_map<std::string, ValueType> TYPE_STR_MAP{
+    {"int", ValueType::INT},
+    {"float", ValueType::FLOAT},
+    {"bool", ValueType::BOOL},
+    {"char", ValueType::CHAR},
+};
+
 Parser::Parser(const std::vector<Token>& tokens){
     this->tokens = tokens;
     this->token_count = tokens.size();
@@ -58,7 +65,7 @@ void Parser::clear(){
     }
     while (!this->node_stack.empty()){
         Node* tmp = this->pop_node();
-        if (tmp->node_type() != Block_N)
+        if (tmp->get_node_type() != Block_N)
             this->nodes.push_back(tmp);
     }
     // this map keeps track of all pointers that have been deleted. A map is used for O(1) lookup times
@@ -130,7 +137,7 @@ void Parser::parse(){
 
 // parses tokens until a complete statement is formed
 void Parser::parse_expr(){
-    while (this->curr_pos <= this->token_count){
+    while (this->curr_pos < this->token_count){
         Token curr_token = this->tokens[this->curr_pos];
         int int_lit, init_count;
         double float_lit;
@@ -147,6 +154,7 @@ void Parser::parse_expr(){
         PrintNode* print_node;
         TokenType op;
         std::string sym;
+        Token interior;
         switch (curr_token.type){
             // data types
             case TypeInt:
@@ -297,9 +305,9 @@ void Parser::parse_expr(){
                 rhs = this->pop_node();
                 lhs = this->pop_node();
                 // ensure the nodes are a type literal and a symbol, respectively
-                if (lhs->node_type() != Type_N)
+                if (lhs->get_node_type() != Type_N)
                     throw std::runtime_error("syntax error: expected type literal");
-                if (rhs->node_type() != Sym_N)
+                if (rhs->get_node_type() != Sym_N)
                     throw std::runtime_error("syntax error: invalid variable name");
                 // create the variable in the current scope
                 var_type = static_cast<TypeNode*>(lhs);
@@ -324,6 +332,32 @@ void Parser::parse_expr(){
                 while (this->stack_size() != init_count)
                     print_node->push_arg(this->pop_node());
                 this->push_node(print_node);
+                break;
+            case ParamOpen:
+                if ((curr_pos + 3) > this->token_count ||  this->tokens[curr_pos + 2].type !=  ParamClose)
+                    throw std::runtime_error("syntax error: expected token ']");
+                std::cout << "passed 1" << std::endl;
+                interior = this->tokens[curr_pos + 1];
+                switch (interior.type){
+                    case IntLiteral:
+                        new_node = new ParamNode(ParamType::Index, std::stoi(interior.txt));
+                        break;
+                    case TypeInt:
+                    case TypeFloat:
+                    case TypeBool:
+                    case TypeChar:
+                        new_node = new ParamNode(ParamType::Type, TYPE_STR_MAP[curr_token.txt]);
+                        break;
+                    default:
+                        throw std::runtime_error("syntax error: invalid parameter");
+                }
+                this->curr_pos += 3;
+                this->push_node(new_node);
+                if (this->return_next)
+                    return;
+                break;
+            case ParamClose:
+                throw std::runtime_error("syntax error: unexpected token ']' ");
                 break;
             case Sym:
                 curr_pos++;
@@ -366,7 +400,7 @@ void Parser::parse_bin_expr(NodeType type, Operator op){
         this->push_node(new BoolLogicNode(lhs, rhs, op));
         break;
     case Asgn_N:
-        if (lhs->node_type() != Var_N)
+        if (lhs->get_node_type() != Var_N)
             throw std::runtime_error("syntax error: cannot assign to non-variable expression");
         this->push_node(new AsgnNode(static_cast<VarNode*>(lhs), rhs));
         break;
