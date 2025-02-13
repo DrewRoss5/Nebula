@@ -10,6 +10,7 @@ enum NodeType{
     Type_N,
     Sym_N,
     Literal_N, 
+    Val_N,
     Var_N,
     Comp_N,
     Defn_N,
@@ -80,30 +81,41 @@ class TypeNode: public Node{
         ValueType val_type;
 };
 
+// this is an abstract class for nodes that hold a value and can have their values updated
+class ValNode: public Node{
+    public:
+        ValNode() {}
+        ValNode(std::shared_ptr<Value>& val_ptr);
+        virtual void assign(const Value& new_val);
+        virtual ValueType get_type() {return val_ptr->get_type();}
+    protected:
+        std::shared_ptr<Value> val_ptr;
+        
+        ValueType val_type;
+};
+
 // this node represents a variable
-class VarNode: public Node{
+class VarNode: public ValNode{
     public:
         VarNode(ValueType val_type) {this->val_type = val_type; this->initialized = false; this->node_type = Var_N;}
         VarNode(const std::shared_ptr<Value>& val, bool initialized);
         Value eval() override; 
-        ValueType get_type() {return this->val_type;}
         bool is_initialized() {return this->initialized;}
         bool operator==(VarNode& rhs);
-        void assign(const Value& new_val);
-        void set_ptr(const std::shared_ptr<Value>& val) {this->val = val;}
+        void assign(const Value& new_val) override;
+        void set_ptr(const std::shared_ptr<Value>& val) {this->val_ptr = val;}
     private:
         bool initialized;
-        ValueType val_type;
-        std::shared_ptr<Value> val;
+        
 };
 
 // this node assigns a variable to the result of the right child. The right child must evaluate to the same type as the variable. This node evaluates to the new value of the variable
 class AsgnNode: public Node{
     public:
-        AsgnNode(VarNode* lhs, Node* rhs);
+        AsgnNode(ValNode* lhs, Node* rhs);
         Value eval() override;
     private:
-        VarNode* lhs;
+        ValNode* lhs;
         Node* rhs;
 };
 
@@ -198,7 +210,7 @@ Value ArithNode::calculate(T lhs_val, T rhs_val, bool return_int){
     else    
         return Value::create(FLOAT, ret_val);
 }
-
+// this node represents a print statement
 class PrintNode: public Node{
     public:
         PrintNode(bool newline) {this->node_type = Print_N; this->newline = newline;}
@@ -209,6 +221,7 @@ class PrintNode: public Node{
         bool newline;
 };
 
+// this node represents a parameter, be it an index or a type
 class ParamNode: public Node{
     public:
         ParamNode(ParamType param_type, unsigned int init_val);
@@ -220,4 +233,5 @@ class ParamNode: public Node{
         ValueType val_type;
         ParamType param_type;
 };
+
 #endif

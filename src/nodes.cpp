@@ -5,9 +5,20 @@
 #include "../inc/values.hpp"
 #include "../inc/nodes.hpp"
 
+/*ValNode Functions*/
+ValNode::ValNode(std::shared_ptr<Value>& val){
+    this->val_ptr = val;
+    this->val_type = val->get_type();
+    this->node_type = Val_N;
+}
+void ValNode::assign(const Value& val){
+    *this->val_ptr = val;
+}
+
+
 /* VarNode Functions */
 VarNode::VarNode(const std::shared_ptr<Value>& val, bool initialize){
-    this->val = val;
+    this->val_ptr = val;
     this->val_type = val->get_type();
     this->initialized = initialize;
     this->node_type = NodeType::Var_N;
@@ -16,8 +27,8 @@ VarNode::VarNode(const std::shared_ptr<Value>& val, bool initialize){
 Value VarNode::eval(){
     if (!this->initialized)
         throw std::runtime_error("cannot evaluate an unitialized variable");
-    auto tmp = *this->val;
-    return *this->val;
+    auto tmp = *this->val_ptr;
+    return *this->val_ptr;
 }
 // compares both the content and type of this variable to another
 bool VarNode::operator==(VarNode& rhs){
@@ -27,11 +38,11 @@ bool VarNode::operator==(VarNode& rhs){
 void VarNode::assign(const Value& new_val){
     if (!this->initialized)
         this->initialized = true;
-    *this->val = new_val;
+    *this->val_ptr = new_val;
 }
 
 /* AsgnNode Functions */
-AsgnNode::AsgnNode(VarNode* lhs, Node* rhs){
+AsgnNode::AsgnNode(ValNode* lhs, Node* rhs){
     this->rhs = rhs;
     this->lhs = lhs;
     this->node_type = NodeType::Asgn_N;
