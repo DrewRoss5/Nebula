@@ -10,7 +10,7 @@ enum NodeType{
     Type_N,
     Sym_N,
     Literal_N, 
-    Val_N,
+    Ptr_N,
     Var_N,
     Comp_N,
     Defn_N,
@@ -84,14 +84,19 @@ class TypeNode: public Node{
 // this is an abstract class for nodes that hold a value and can have their values updated
 class ValNode: public Node{
     public:
-        ValNode() {}
-        ValNode(std::shared_ptr<Value>& val_ptr);
-        virtual void assign(const Value& new_val);
-        virtual ValueType get_type() {return val_ptr->get_type();}
+        virtual void assign(const Value& new_val) = 0;
+        virtual ValueType get_type() {return this->val_type;}
     protected:
-        std::shared_ptr<Value> val_ptr;
-        
         ValueType val_type;
+};
+
+class PtrNode: public ValNode{
+    public:
+        PtrNode(Value* val_ptr);
+        void assign(const Value& new_val) override {*this->val_ptr = new_val;}
+        Value eval() override;
+    protected:
+        Value* val_ptr;
 };
 
 // this node represents a variable
@@ -105,6 +110,7 @@ class VarNode: public ValNode{
         void assign(const Value& new_val) override;
         void set_ptr(const std::shared_ptr<Value>& val) {this->val_ptr = val;}
     private:
+        std::shared_ptr<Value> val_ptr;
         bool initialized;
         
 };

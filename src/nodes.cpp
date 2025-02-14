@@ -5,16 +5,20 @@
 #include "../inc/values.hpp"
 #include "../inc/nodes.hpp"
 
-/*ValNode Functions*/
-ValNode::ValNode(std::shared_ptr<Value>& val){
-    this->val_ptr = val;
-    this->val_type = val->get_type();
-    this->node_type = Val_N;
+/* PtrNode Functions */
+PtrNode::PtrNode(Value* val_ptr){
+    this->val_ptr = val_ptr;
+    this->node_type = Ptr_N;
+    if (val_ptr)
+        this->val_type = val_ptr->get_type();
+    else
+        this->val_type = NULL_TYPE;
 }
-void ValNode::assign(const Value& val){
-    *this->val_ptr = val;
+Value PtrNode::eval(){
+    if (!this->val_ptr)
+        throw std::runtime_error("cannot dereference a null pointer");
+    return *this->val_ptr;
 }
-
 
 /* VarNode Functions */
 VarNode::VarNode(const std::shared_ptr<Value>& val, bool initialize){

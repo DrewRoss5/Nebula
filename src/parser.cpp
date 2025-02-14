@@ -399,7 +399,7 @@ void Parser::parse_bin_expr(NodeType type, Operator op){
         this->push_node(new BoolLogicNode(lhs, rhs, op));
         break;
     case Asgn_N:
-        if (lhs->get_node_type() != Var_N && lhs->get_node_type() != Val_N)
+        if (lhs->get_node_type() != Var_N && lhs->get_node_type() != Ptr_N)
             throw std::runtime_error("syntax error: cannot assign to expression");
         this->push_node(new AsgnNode(static_cast<ValNode*>(lhs), rhs));
         break;
