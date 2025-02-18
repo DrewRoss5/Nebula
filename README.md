@@ -1,7 +1,7 @@
 # Nebula
 A small interpreted scripting language
 ## Project Status
-Nebula is an early-stage toy programming language, actively developed with new features planned. While it is not yet production-ready, it is open for experimentation and feedback.
+Nebula is an early-stage programming language, currently in developmen with new features planned. While it is not yet production-ready, it is open for experimentation and feedback.
 ### Currently Implemented:
   - Blocks
   - Variables
