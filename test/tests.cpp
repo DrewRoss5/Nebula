@@ -90,22 +90,24 @@ TEST(ArrayTest, Basic){
     // ensure basic opperations work
     NebulaArray int_arr(INT);
     for (int i = 0; i < 10; i++){
-        Value* val = &int_arr.get(i);
+        Value* val = int_arr.get(i);
         *val = Value::create(INT, i * 2);
     }
-    EXPECT_EQ(int_arr.get(5).as<int>(), 10);
+    EXPECT_EQ(int_arr.get(4)->as<int>(), 8);
 }
 TEST(ArrayTest, Large){
     // ensure that resizing works as expected
-    NebulaArray int_arr(INT);
+    Value arr_val(INT, true);
+    std::shared_ptr<NebulaArray> int_arr = arr_val.as_arr();
     for (int i = 0; i < 128; i++){
-        Value* val = &int_arr.get(i);
+        Value* val = int_arr->get(i);
         *val = Value::create(INT, i + 1);
     }
     for (int i = 0; i < 128; i++){
-        EXPECT_EQ(int_arr.get(i).as<int>(), i + 1);
+        EXPECT_EQ(int_arr->get(i)->as<int>(), i + 1);
     }
 }
+
 
 /* PARSER TESTS */
 TEST(ParserTest, Basic){

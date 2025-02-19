@@ -9,9 +9,13 @@ SymbolTable::SymbolTable(SymbolTable* parent){
 }
 
 // creates a new value on the symbol table and associates it with a pointer. 
-// This function assumes that the symbol has already been determined not to exist
 void SymbolTable::create(const std::string& symbol, ValueType type){
-    this->table[symbol] = std::shared_ptr<Value> (Value::create_dyn(type));
+    this->table[symbol] = std::shared_ptr<Value>(Value::create_dyn(type));
+}
+
+// creates a new array on the symbol table and associates it with a pointer
+void SymbolTable::create_arr(const std::string& symbol, ValueType type){
+    this->table[symbol] = std::shared_ptr<Value>(Value::create_dyn(type, true));
 }
 
 // clears all values on the symtable

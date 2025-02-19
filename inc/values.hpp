@@ -2,6 +2,7 @@
 #define VALUE_H
 
 #include <iostream>
+#include <memory>
 #include <vector>
 #include <cstring>
 #include <cstddef>
@@ -20,9 +21,8 @@ enum ValueType{
 class Value{
     public:
         Value() {}
-        ~Value();
         Value(ValueType type, const std::vector<std::byte>& val, bool is_arr = false);
-        Value(ValueType type, bool is_arr = false) {this->type = type;};
+        Value(ValueType type, bool is_arr = false);
         template <typename T>
         static Value create(ValueType type, const T& val, bool is_arr = false);
         template <typename T>
@@ -37,12 +37,12 @@ class Value{
         bool is_null() {return this->type == NULL_TYPE;}
         friend std::ostream& operator<<(std::ostream& out, const Value& val); 
         bool is_array() {return this->is_arr;}
-        NebulaArray& as_arr();
+        std::shared_ptr<NebulaArray> as_arr();
     private:
         std::vector<std::byte> val;
         ValueType type;
         bool is_arr;
-        NebulaArray* arr {nullptr};
+        std::shared_ptr<NebulaArray> arr {nullptr};
 };
 
 template <typename T>
@@ -83,7 +83,7 @@ class NebulaArray{
         NebulaArray() {this->arr_ptr = nullptr; this->val_type = NULL_TYPE;}
         NebulaArray(ValueType type);
         ~NebulaArray();
-        Value& get(int index);
+        Value* get(int index);
     private:
         int size {0};
         int capacity {32};

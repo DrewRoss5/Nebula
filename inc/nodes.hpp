@@ -112,7 +112,6 @@ class VarNode: public ValNode{
     private:
         std::shared_ptr<Value> val_ptr;
         bool initialized;
-        
 };
 
 // this node assigns a variable to the result of the right child. The right child must evaluate to the same type as the variable. This node evaluates to the new value of the variable
@@ -234,6 +233,7 @@ class ParamNode: public Node{
         Value eval() override {return std::move(Value(NULL_TYPE));}
         int get_index();
         ValueType get_val_type();
+        ParamType get_param_type() {return this->param_type;}
     private:
         int index_no;
         ValueType val_type;

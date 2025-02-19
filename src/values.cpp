@@ -1,11 +1,19 @@
 #include "../inc/values.hpp"
 
+Value::Value(ValueType type, bool is_arr){
+    this->type = type;
+    if (is_arr){
+        this->is_arr = true;
+        this->arr = std::shared_ptr<NebulaArray>(new NebulaArray(type));
+    }
+}
+
 Value::Value(ValueType type, const std::vector<std::byte>& val, bool is_arr){
     this->type = type;
     this->val = val;
     if (is_arr){
         this->is_arr = true;
-        this->arr = new NebulaArray(type);
+        this->arr = std::shared_ptr<NebulaArray>(new NebulaArray(type));
     }
 }
 
@@ -14,12 +22,6 @@ Value* Value::create_dyn(ValueType type, bool is_arr){
     return new Value(type, is_arr);
 }
 
-// deletes the memory associated with the value if it's an array
-Value::~Value(){
-    if (this->is_arr)
-        delete arr;
-
-}
 // compares two Values, will only return true if they are of the same type and value
 bool Value::operator==(const Value& rhs) const{
     if (this->type != rhs.type)
@@ -65,10 +67,10 @@ std::ostream& operator<<(std::ostream& out, const Value& val){
 
 // Nebula Array functions
 // returns the refference to the array from the value, raises an error if the value is not an array
-NebulaArray& Value::as_arr(){
-    if (this->arr)
+std::shared_ptr<NebulaArray> Value::as_arr(){
+    if (!this->arr)
         throw std::runtime_error("cannot access array methods for a non-array value");
-    return *this->arr;
+    return this->arr;
 }
 
 // constructs a new array for 32 values
@@ -94,7 +96,7 @@ void NebulaArray::realloc(){
 }
 
 // returns a reference to the value at the given index, or throws a std::runtime_error if the index is out of range
-Value& NebulaArray::get(int index){
+Value* NebulaArray::get(int index){
     if (index > this->size)
         throw std::runtime_error("cannot access element out range");
     // check if we are accessing the end o the array, and resize if needed
@@ -103,5 +105,5 @@ Value& NebulaArray::get(int index){
             this->realloc();
         this->size++;
     }
-    return this->arr_ptr[index];
+    return &this->arr_ptr[index];
 }

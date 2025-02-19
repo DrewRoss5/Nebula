@@ -297,27 +297,8 @@ void Parser::parse_expr(){
                 break;
             // Variable-related nodes
             case Defn:
-                // parse the next two nodes
-                curr_pos++;
-                this->parse_expr();
-                if (this->stack_size() < 2)
-                    throw std::runtime_error("error: expected expression (6)");
-                rhs = this->pop_node();
-                lhs = this->pop_node();
-                // ensure the nodes are a type literal and a symbol, respectively
-                if (lhs->get_node_type() != Type_N)
-                    throw std::runtime_error("syntax error: expected type literal");
-                if (rhs->get_node_type() != Sym_N)
-                    throw std::runtime_error("syntax error: invalid variable name");
-                // create the variable in the current scope
-                var_type = static_cast<TypeNode*>(lhs);
-                var_name = static_cast<SymNode*>(rhs);
-                sym = var_name->get_sym();
-                this->curr_scope->create(sym, var_type->get_type());
-                // push the newly created variable onto the node stack
-                new_node = new VarNode(curr_scope->get(sym), false);
-                this->push_node(new_node);
-                continue;
+                this->parse_defn();
+                break;
             case Asgn:
                 parse_bin_expr(Asgn_N, Assignment);
                 break;
@@ -352,8 +333,10 @@ void Parser::parse_expr(){
                 }
                 this->curr_pos += 3;
                 this->push_node(new_node);
-                if (this->return_next)
+                if (this->return_next){
+                    this->return_next = false;
                     return;
+                }
                 break;
             case ParamClose:
                 throw std::runtime_error("syntax error: unexpected token ']' ");
@@ -363,8 +346,10 @@ void Parser::parse_expr(){
                 if (curr_scope->exists(curr_token.txt)){
                     var_node = new VarNode(this->curr_scope->get(curr_token.txt), true);
                     this->push_node(var_node);
-                    if (this->return_next)
+                    if (this->return_next){
+                        this->return_next = false;
                         return;
+                    }
                 } else {
                     new_node = new SymNode(curr_token.txt);
                     this->push_node(new_node);
@@ -404,6 +389,44 @@ void Parser::parse_bin_expr(NodeType type, Operator op){
         this->push_node(new AsgnNode(static_cast<ValNode*>(lhs), rhs));
         break;
     }
+}
+
+// parses the definition of either a variable or an array 
+void Parser::parse_defn(){
+     // parse the next two nodes
+     this->curr_pos++;
+     this->parse_expr();
+     if (this->stack_size() < 2)
+         throw std::runtime_error("error: expected expression (6)");
+     Node* rhs = this->pop_node();
+     Node* lhs = this->pop_node();
+     if (rhs->get_node_type() != Sym_N)
+         throw std::runtime_error("syntax error: invalid variable name");
+     switch (lhs->get_node_type()){
+        case Type_N:
+            this->parse_var_defn(static_cast<SymNode*>(rhs), static_cast<TypeNode*>(lhs));
+            break;
+        case Param_N:
+            this->parse_arr_defn(static_cast<SymNode*>(rhs), static_cast<ParamNode*>(lhs));
+            break;
+        default:
+            throw std::runtime_error("syntax error: invalid defintion");
+            break;
+     }
+}
+
+// takes the name and type of a new variable, stores the new variable in the current scope, and pushes it to the eval stack
+void Parser::parse_var_defn(SymNode* rhs, TypeNode* lhs){
+    std::string sym = rhs->get_sym();
+    this->curr_scope->create(sym, lhs->get_type());
+    this->push_node(new VarNode(curr_scope->get(sym), false));
+}
+
+// takes the name and type of a new arra and stores the the new array to the current scope
+void Parser::parse_arr_defn(SymNode* rhs, ParamNode* lhs){
+    if (lhs->get_param_type() != ParamType::Type)
+        throw std::runtime_error("syntax error: invalid array declaration");
+    this->curr_scope->create_arr(rhs->get_sym(), lhs->get_val_type());
 }
 
 // this function creates a new block, and sets it to the current scope 

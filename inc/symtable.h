@@ -12,6 +12,7 @@ class SymbolTable{
         SymbolTable() {}
         SymbolTable(SymbolTable* parent);
         void create(const std::string& symbol, ValueType type);
+        void create_arr(const std::string& symbol, ValueType type);
         void clear();
         // getters
         std::shared_ptr<Value> get(const std::string& val);

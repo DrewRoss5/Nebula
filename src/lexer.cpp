@@ -74,7 +74,6 @@ void tokenize(const std::string& expr, std::vector<Token>& tokens){
         {"bool", TypeBool},
         {"true", BoolLiteral},
         {"false", BoolLiteral},
-        {"arr", Arr},
         {"let", Defn},
         {"begin", Block},
         {"end", BlockEnd},

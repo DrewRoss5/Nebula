@@ -27,6 +27,10 @@ class Parser{
         void push_block(BlockNode* block);
         void parse_expr();
         void parse_bin_expr(NodeType type, Operator op);
+        void parse_defn();
+        void parse_var_defn(SymNode* lhs, TypeNode* rhs);
+        void parse_arr_defn(SymNode* lhs, ParamNode* rhs);
+        void parse_index(ParamNode* index);
         void clear();
         size_t token_count;
         size_t curr_pos {0};
