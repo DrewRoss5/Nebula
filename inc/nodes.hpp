@@ -106,6 +106,8 @@ class VarNode: public ValNode{
         VarNode(const std::shared_ptr<Value>& val, bool initialized);
         Value eval() override; 
         bool is_initialized() {return this->initialized;}
+        bool is_arr() {return this->val_ptr->is_array();}
+        std::shared_ptr<NebulaArray> get_arr() {return this->val_ptr->as_arr();}
         bool operator==(VarNode& rhs);
         void assign(const Value& new_val) override;
         void set_ptr(const std::shared_ptr<Value>& val) {this->val_ptr = val;}

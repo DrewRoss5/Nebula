@@ -144,14 +144,13 @@ void Parser::parse_expr(){
         char char_lit;
         bool bool_lit;
         Node* condition, *new_node, *rhs, *lhs, *to_copy;
-        TypeNode* var_type;
-        SymNode* var_name;
         BlockNode* new_block;
         CondBlockNode* conditional;
         EvalBlockNode* eval_block;
         VarNode* var_node;
         SymbolTable* sym_table;
         PrintNode* print_node;
+        ParamNode* param_node;
         TokenType op;
         std::string sym;
         Token interior;
@@ -320,8 +319,9 @@ void Parser::parse_expr(){
                 interior = this->tokens[curr_pos + 1];
                 switch (interior.type){
                     case IntLiteral:
-                        new_node = new ParamNode(ParamType::Index, std::stoi(interior.txt));
-                        break;
+                        param_node = new ParamNode(ParamType::Index, std::stoi(interior.txt));
+                        parse_index(param_node);
+                        return;
                     case TypeInt:
                     case TypeFloat:
                     case TypeBool:
@@ -427,6 +427,22 @@ void Parser::parse_arr_defn(SymNode* rhs, ParamNode* lhs){
     if (lhs->get_param_type() != ParamType::Type)
         throw std::runtime_error("syntax error: invalid array declaration");
     this->curr_scope->create_arr(rhs->get_sym(), lhs->get_val_type());
+}
+
+// parses an index node and returns a pointer to the indexed element of the previous token
+void Parser::parse_index(ParamNode* index){
+    int index_no = index->get_index();
+    Node* lhs = this->pop_node();
+    // ensure the previous node is an array
+    if (lhs->get_node_type() != Var_N)
+        throw std::runtime_error("syntax error: expression cannot be indexed");
+    VarNode* var_node = static_cast<VarNode*>(lhs);
+    if (!var_node->is_arr())
+        throw std::runtime_error("syntax error: cannot index a non-array variable");
+    // return a pointer to the indexed value
+    Value* val = var_node->get_arr()->get(index_no);
+    this->push_node(new PtrNode(val));
+    this->curr_pos += 3;
 }
 
 // this function creates a new block, and sets it to the current scope 

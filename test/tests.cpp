@@ -238,20 +238,19 @@ TEST(ParserTest, Printing){
         )"
     );
 }
-TEST(ParserTest, Params){
-    // initialize two parameter nodes
-    std::vector<Token> tokens;
-    tokenize("[int][5]", tokens);
-    Parser parser(tokens);
-    parser.parse();
-    // ensure both are created properly
-    ParamNode* param;
-    Node* expr = parser.next_expr();
-    EXPECT_EQ(expr->get_node_type(), Param_N);
-    param = static_cast<ParamNode*>(expr);
-    EXPECT_EQ(param->get_val_type(), INT);
-    param = static_cast<ParamNode*>(parser.next_expr());
-    EXPECT_EQ(param->get_index(), 5);
+TEST(ParserTest, Arrays){
+    Interpreter interpreter;
+    // test a program with multiple values
+    interpreter.run(
+        R"(
+            let [int] nums
+            nums[0] = 5
+            nums[1] = 3
+            nums[2] = nums[0] 
+            nums[2] * 5
+        )"
+    );
+    EXPECT_EQ(interpreter.result().as<int>(), 25);
 }
 
 
