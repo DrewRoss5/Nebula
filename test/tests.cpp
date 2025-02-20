@@ -246,11 +246,11 @@ TEST(ParserTest, Arrays){
             let [int] nums
             nums[0] = 5
             nums[1] = 3
-            nums[2] = nums[0] 
-            nums[2] * 5
+            nums[2] = (nums[1] * nums[0])
+            nums[2] * 2
         )"
     );
-    EXPECT_EQ(interpreter.result().as<int>(), 25);
+    EXPECT_EQ(interpreter.result().as<int>(), 30);
 }
 
 

@@ -134,6 +134,7 @@ Value ArithNode::eval(){
     case FLOAT:
         return this->calculate(rhs_val.as<double>(), lhs_val.as<double>(), false);
     }
+    std::cout << "Returning null here" << std::endl;
     return Value(NULL_TYPE);
 }
 

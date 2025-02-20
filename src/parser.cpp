@@ -346,7 +346,7 @@ void Parser::parse_expr(){
                 if (curr_scope->exists(curr_token.txt)){
                     var_node = new VarNode(this->curr_scope->get(curr_token.txt), true);
                     this->push_node(var_node);
-                    if (this->return_next){
+                    if (this->return_next && !var_node->is_arr()){
                         this->return_next = false;
                         return;
                     }
