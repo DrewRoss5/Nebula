@@ -10,7 +10,8 @@ Nebula is an early-stage programming language, currently in developmen with new 
   - Simple printing
 
 ### Planned Features:
-- Arrays
+- Arrays (In Progress)
+  - Still must implement priting and variable indexing 
 - Strings
 - For loops
 - Functions
